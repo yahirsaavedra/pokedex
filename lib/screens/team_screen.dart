@@ -85,11 +85,7 @@ class _TeamScreenState extends State<TeamScreen> {
     return OrientationBuilder(
       builder: (BuildContext context, Orientation orientation) {
         return Scaffold(
-          appBar: AppBar(
-            title: const Text(''),
-            shadowColor: Colors.black,
-            elevation: 1,
-          ),
+          appBar: AppBar(shadowColor: Colors.black, elevation: 1),
           backgroundColor: Colors.grey.shade200,
           body: Padding(
             padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 20),
