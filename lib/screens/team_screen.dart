@@ -1,6 +1,6 @@
-import 'dart:convert'; // Para convertir JSON a Map/List
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http; // Para hacer peticiones HTTP
+import 'package:pokedexapp/screens/home_screen.dart';
+import 'package:pokedexapp/helpers/database.dart';
 
 // Pantalla donde se crea o modifica un equipo de Pokémon
 class TeamScreen extends StatefulWidget {
@@ -11,8 +11,7 @@ class TeamScreen extends StatefulWidget {
 }
 
 class _TeamScreenState extends State<TeamScreen> {
-  // Variables
-  late Future<List> _pokemonFuture; // Lista de Pokémon (se obtiene de la API)
+  // Variables// Lista de Pokémon (se obtiene de la API)
   late Size _screen; // Tamaño de la pantalla
   late bool _nuevoEquipo; // Si estamos creando un nuevo equipo o editando uno
 
@@ -31,8 +30,7 @@ class _TeamScreenState extends State<TeamScreen> {
   @override
   void initState() {
     _nuevoEquipo = true; // Por defecto estamos creando
-    super.initState();
-    _pokemonFuture = _fetchPokemonList(); // Carga la lista de Pokémon
+    super.initState(); // Carga la lista de Pokémon
   }
 
   @override
@@ -52,7 +50,12 @@ class _TeamScreenState extends State<TeamScreen> {
     Widget botonRegresar = Align(
       alignment: Alignment.topLeft,
       child: TextButton.icon(
-        onPressed: () {},
+        onPressed: () {
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (context) => const HomeScreen()),
+          );
+        },
         icon: const Icon(Icons.keyboard_arrow_left),
         label: const Text("Regresar"),
       ),
@@ -73,16 +76,43 @@ class _TeamScreenState extends State<TeamScreen> {
         style: const TextStyle(fontSize: 25),
       ),
       "boton": FilledButton(
-        onPressed: () {
+        onPressed: () async {
           try {
             _validarFormulario(); // Valida campos de texto
-            _validarLista(); // Valida que haya Pokémon seleccionados
+            _validarLista(); // Valida selección de Pokémon
+
+            // Insertar equipo en la BD
+            final idEquipo = await BaseDatos.instance.insert("equipos", {
+              "nombre": _nombreController.text.trim(),
+              "creador": _creadorController.text.trim(),
+              "descripcion": _descripcionController.text.trim(),
+            });
+
+            // Asignar los Pokémon seleccionados al equipo
+            for (final index in _seleccionados) {
+              await BaseDatos.instance.update(
+                "pokemones",
+                {"equipo": idEquipo},
+                "id = ?",
+                [index + 1], // asumiendo que el index coincide con el id - 1
+              );
+            }
+
+            // Regresar a la pantalla principal
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (context) => const HomeScreen()),
+            );
           } catch (e) {
             desplegarError(e); // Muestra error si falla algo
           }
         },
+
         style: FilledButton.styleFrom(
-          minimumSize: Size(_screen.width * 0.2, _screen.width * 0.07),
+          minimumSize: Size(
+            _screen.width * 0.2,
+            _screen.width * 0.07,
+          ), // PENDIENTE CAMBIAR UN WIDTH POR HEIGHT, OOPS!
           padding: const EdgeInsets.symmetric(vertical: 10),
           textStyle: const TextStyle(fontSize: 18),
           backgroundColor: Colors.red,
@@ -195,11 +225,12 @@ class _TeamScreenState extends State<TeamScreen> {
     }
   }
 
-  // Muestra la lista de Pokémon en formato GridView
   Widget listaPokemones() {
     return Expanded(
       child: FutureBuilder<List>(
-        future: _pokemonFuture, // Espera la lista de Pokémon
+        future: BaseDatos.instance.queryAll(
+          "pokemones",
+        ), // Espera la lista de Pokémon
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(
@@ -227,9 +258,9 @@ class _TeamScreenState extends State<TeamScreen> {
                 itemCount: data.length,
                 itemBuilder: (context, index) {
                   final pokemon = data[index] as Map<String, dynamic>;
-                  String image = pokemon["sprites"]["front_default"];
-                  String name = pokemon["name"] ?? "???";
-                  name = "${name[0].toUpperCase()}${name.substring(1)}";
+                  final nombre = pokemon["nombre"];
+                  final imagen = pokemon["imagen"];
+                  final tipo = pokemon["tipo"];
 
                   bool isSelected = _seleccionados.contains(index);
 
@@ -241,8 +272,8 @@ class _TeamScreenState extends State<TeamScreen> {
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Image(image: NetworkImage(image)),
-                        Text(name, style: const TextStyle(fontSize: 16)),
+                        Image(image: NetworkImage(imagen)),
+                        Text(nombre, style: const TextStyle(fontSize: 16)),
                         const Divider(
                           height: 30,
                           thickness: 0.5,
@@ -290,20 +321,5 @@ class _TeamScreenState extends State<TeamScreen> {
         backgroundColor: Colors.red,
       ),
     );
-  }
-
-  // Obtiene 150 Pokémon de la API pokeapi.co
-  Future<List> _fetchPokemonList() async {
-    final futures = List.generate(150, (i) async {
-      final id = i + 1;
-      final url = "https://pokeapi.co/api/v2/pokemon/$id";
-      final response = await http.get(Uri.parse(url));
-      if (response.statusCode == 200) {
-        return jsonDecode(response.body) as Map<String, dynamic>;
-      } else {
-        throw Exception('Error con el Pokémon $id');
-      }
-    });
-    return await Future.wait(futures);
   }
 }

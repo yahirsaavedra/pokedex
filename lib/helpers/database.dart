@@ -1,0 +1,121 @@
+import 'package:pokedexapp/helpers/pokeapi.dart';
+import 'package:sqflite/sqflite.dart';
+import 'package:path/path.dart';
+
+class BaseDatos {
+  // Nombre y versión de la BD
+  static const _dbName = 'pokedex.db';
+  static const _dbVersion = 1;
+
+  // Singleton (instancia unica)
+  BaseDatos._privateConstructor();
+  static final BaseDatos instance = BaseDatos._privateConstructor();
+
+  static Database? _db;
+
+  Future<Database> get database async {
+    if (_db != null) return _db!;
+    _db = await _initDatabase();
+    return _db!;
+  }
+
+  // Inicializa la base de datos
+  Future<Database> _initDatabase() async {
+    final dbPath = await getDatabasesPath();
+    final path = join(dbPath, _dbName);
+
+    Database db = await openDatabase(
+      path,
+      version: _dbVersion,
+      onCreate: _onCreate,
+      onUpgrade: _onUpgrade,
+    );
+
+    return db;
+  }
+
+  // Crear tablas
+  Future<void> _onCreate(Database db, int version) async {
+    await db.execute('''
+      CREATE TABLE IF NOT EXISTS pokemones (
+        id INTEGER PRIMARY KEY,
+        nombre TEXT NOT NULL UNIQUE,
+        tipo VARCHAR(50),
+        altura DECIMAL(10, 2),
+        peso DECIMAL(10, 2),
+        imagen VARCHAR(2048),
+        descripcion TEXT,
+        equipo INTEGER,
+        FOREIGN KEY (equipo) REFERENCES equipos(id)
+      );
+
+      CREATE TABLE IF NOT EXISTS equipos (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        nombre TEXT NOT NULL UNIQUE,
+        creador TEXT NOT NULL,
+        descripcion TEXT NOT NULL
+      );
+    ''');
+
+    List lista = await PokeAPI().fetchPokemonList();
+
+    List.generate(lista.length, (i) async {
+      await db.execute('''
+      INSERT OR IGNORE INTO pokemones VALUES (
+        ${lista[i]["id"]},
+        "${lista[i]["name"]}",
+        "${lista[i]["type"]}",
+        ${lista[i]["height"]},
+        ${lista[i]["weight"]},
+        "${lista[i]["sprites"]["front_default"]}",
+        "${lista[i]["description"]}",
+        NULL
+      );
+    ''');
+    });
+  }
+
+  // Actualizar estructura de la BD si cambia la versión
+  Future<void> _onUpgrade(Database db, int oldVersion, int newVersion) async {
+    // Ejemplo: si en la versión 2 agregas una tabla nueva
+    if (oldVersion < 2) {
+      await db.execute('''
+        CREATE TABLE products (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          name TEXT NOT NULL,
+          price REAL NOT NULL
+        )
+      ''');
+    }
+  }
+
+  // Métodos genéricos CRUD
+  Future<int> insert(String table, Map<String, dynamic> values) async {
+    final db = await database;
+    return await db.insert(table, values);
+  }
+
+  Future<List<Map<String, dynamic>>> queryAll(String table) async {
+    final db = await database;
+    return await db.query(table);
+  }
+
+  Future<int> update(
+    String table,
+    Map<String, dynamic> values,
+    String where,
+    List<dynamic> whereArgs,
+  ) async {
+    final db = await database;
+    return await db.update(table, values, where: where, whereArgs: whereArgs);
+  }
+
+  Future<int> delete(
+    String table,
+    String where,
+    List<dynamic> whereArgs,
+  ) async {
+    final db = await database;
+    return await db.delete(table, where: where, whereArgs: whereArgs);
+  }
+}

@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
-// import 'package:pokedexapp/screens/home_screen.dart';
-import 'package:pokedexapp/screens/team_screen.dart'; // Pantalla de gestión de equipos
+import 'package:pokedexapp/screens/home_screen.dart';
+import 'package:pokedexapp/helpers/database.dart';
 
 // Función principal de la app
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await BaseDatos.instance.database;
+
   runApp(const Pokedex()); // Inicia el widget raíz de la aplicación
 }
 
@@ -18,7 +21,7 @@ class Pokedex extends StatelessWidget {
       title: "Pokédex",
       debugShowCheckedModeBanner: false, // Quita la etiqueta "DEBUG"
       home:
-          const TeamScreen(), // Pantalla inicial (puede cambiarse en el futuro)
+          const HomeScreen(), // Pantalla inicial (puede cambiarse en el futuro)
     );
   }
 }

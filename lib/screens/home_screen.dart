@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
-
-// Este main ejecuta SOLO esta pantalla (sirve para pruebas)
-// Normalmente no usarás dos main() en la misma app
-void main() => runApp(const HomeScreen());
+import 'package:pokedexapp/screens/pages/pokedex_page.dart';
+import 'package:pokedexapp/screens/pages/team_page.dart';
 
 // Pantalla principal con tabs ("Mis equipos" y "Pokedex")
 class HomeScreen extends StatefulWidget {
@@ -44,16 +42,12 @@ class TabControllerExample extends StatelessWidget {
           appBar: AppBar(
             bottom: TabBar(tabs: tabs), // Barra de pestañas
           ),
+
           body: TabBarView(
-            // Contenido de cada pestaña
-            children: tabs.map((Tab tab) {
-              return Center(
-                child: Text(
-                  '${tab.text!} Tab', // Muestra el nombre de la pestaña
-                  style: Theme.of(context).textTheme.headlineSmall,
-                ),
-              );
-            }).toList(),
+            children: const [
+              MisEquiposScreen(), // Archivo nuevo 1
+              PokedexScreen(), // Archivo nuevo 2
+            ],
           ),
         ),
       ),
