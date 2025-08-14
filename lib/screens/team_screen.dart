@@ -1,7 +1,8 @@
-import 'dart:convert';
+import 'dart:convert'; // Para convertir JSON a Map/List
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
+import 'package:http/http.dart' as http; // Para hacer peticiones HTTP
 
+// Pantalla donde se crea o modifica un equipo de Pokémon
 class TeamScreen extends StatefulWidget {
   const TeamScreen({super.key});
 
@@ -10,28 +11,33 @@ class TeamScreen extends StatefulWidget {
 }
 
 class _TeamScreenState extends State<TeamScreen> {
-  late Future<List> _pokemonFuture;
-  late Size _screen;
-  late bool _nuevoEquipo;
+  // Variables
+  late Future<List> _pokemonFuture; // Lista de Pokémon (se obtiene de la API)
+  late Size _screen; // Tamaño de la pantalla
+  late bool _nuevoEquipo; // Si estamos creando un nuevo equipo o editando uno
 
-  final SizedBox _separadorV = const SizedBox(width: 8);
+  final SizedBox _separadorV = const SizedBox(width: 8); // Separador horizontal
 
+  // Controladores de texto para el formulario
   final _nombreController = TextEditingController();
   final _creadorController = TextEditingController();
   final _descripcionController = TextEditingController();
-  final _formKey = GlobalKey<FormState>();
 
+  final _formKey = GlobalKey<FormState>(); // Clave para validar el formulario
+
+  // Conjunto de índices seleccionados del GridView
   final Set<int> _seleccionados = {};
 
   @override
   void initState() {
-    _nuevoEquipo = true;
+    _nuevoEquipo = true; // Por defecto estamos creando
     super.initState();
-    _pokemonFuture = _fetchPokemonList();
+    _pokemonFuture = _fetchPokemonList(); // Carga la lista de Pokémon
   }
 
   @override
   void dispose() {
+    // Liberar memoria de los controladores
     _nombreController.dispose();
     _creadorController.dispose();
     _descripcionController.dispose();
@@ -40,8 +46,9 @@ class _TeamScreenState extends State<TeamScreen> {
 
   @override
   Widget build(BuildContext context) {
-    _screen = MediaQuery.sizeOf(context);
+    _screen = MediaQuery.sizeOf(context); // Obtiene tamaño de pantalla
 
+    // Botón de regresar (a implementar funcionalidad)
     Widget botonRegresar = Align(
       alignment: Alignment.topLeft,
       child: TextButton.icon(
@@ -51,6 +58,7 @@ class _TeamScreenState extends State<TeamScreen> {
       ),
     );
 
+    // Línea divisoria
     Widget divisor = const Divider(
       height: 30,
       thickness: 0.5,
@@ -58,6 +66,7 @@ class _TeamScreenState extends State<TeamScreen> {
       color: Colors.grey,
     );
 
+    // Encabezado con título y botón
     Map<String, dynamic> header = {
       "titulo": Text(
         _nuevoEquipo ? "Crear nuevo equipo" : "Modificar Equipo",
@@ -66,10 +75,10 @@ class _TeamScreenState extends State<TeamScreen> {
       "boton": FilledButton(
         onPressed: () {
           try {
-            _validarFormulario();
-            _validarLista();
+            _validarFormulario(); // Valida campos de texto
+            _validarLista(); // Valida que haya Pokémon seleccionados
           } catch (e) {
-            desplegarError(e);
+            desplegarError(e); // Muestra error si falla algo
           }
         },
         style: FilledButton.styleFrom(
@@ -100,8 +109,8 @@ class _TeamScreenState extends State<TeamScreen> {
                     children: [header["titulo"], header["boton"]],
                   ),
                   divisor,
-                  formularioEquipo(orientation),
-                  listaPokemones(),
+                  formularioEquipo(orientation), // Campos de texto
+                  listaPokemones(), // Lista de Pokémon en Grid
                 ],
               ),
             ),
@@ -111,18 +120,19 @@ class _TeamScreenState extends State<TeamScreen> {
     );
   }
 
+  // Crea un campo de texto con validación y opción de solo lectura
   Expanded campo(String texto, TextEditingController controller) {
     return Expanded(
       child: TextFormField(
         controller: controller,
-        readOnly: !_nuevoEquipo,
+        readOnly: !_nuevoEquipo, // Si no es nuevo, no se puede editar
         decoration: InputDecoration(
           border: const OutlineInputBorder(),
           labelText: texto,
         ),
         validator: (value) {
           if (value == null || value.trim().isEmpty) {
-            return "";
+            return ""; // Error si está vacío
           }
           return null;
         },
@@ -130,6 +140,7 @@ class _TeamScreenState extends State<TeamScreen> {
     );
   }
 
+  // Crea el formulario del equipo (adaptado a orientación vertical u horizontal)
   Widget formularioEquipo(Orientation orientacion) {
     SizedBox separadorH = const SizedBox(height: 70);
     if (orientacion == Orientation.portrait) {
@@ -167,12 +178,14 @@ class _TeamScreenState extends State<TeamScreen> {
     }
   }
 
+  // Valida que todos los campos del formulario estén llenos
   void _validarFormulario() {
     if (!_formKey.currentState!.validate()) {
       throw Exception("Por favor, completa todos los campos.");
     }
   }
 
+  // Valida que haya entre 1 y 10 Pokémon seleccionados
   void _validarLista() {
     if (_seleccionados.isEmpty) {
       throw Exception("Selecciona al menos un pokémon.");
@@ -182,13 +195,16 @@ class _TeamScreenState extends State<TeamScreen> {
     }
   }
 
+  // Muestra la lista de Pokémon en formato GridView
   Widget listaPokemones() {
     return Expanded(
       child: FutureBuilder<List>(
-        future: _pokemonFuture,
+        future: _pokemonFuture, // Espera la lista de Pokémon
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator());
+            return const Center(
+              child: CircularProgressIndicator(),
+            ); // Cargando...
           }
           if (snapshot.hasError) {
             return Center(child: Text("Error: ${snapshot.error}"));
@@ -237,7 +253,9 @@ class _TeamScreenState extends State<TeamScreen> {
                           onPressed: () {
                             setState(() {
                               if (isSelected) {
-                                _seleccionados.remove(index);
+                                _seleccionados.remove(
+                                  index,
+                                ); // Quita de la selección
                               } else {
                                 try {
                                   if (_seleccionados.isNotEmpty) {
@@ -264,6 +282,7 @@ class _TeamScreenState extends State<TeamScreen> {
     );
   }
 
+  // Muestra errores en un SnackBar rojo
   void desplegarError(error) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
@@ -273,6 +292,7 @@ class _TeamScreenState extends State<TeamScreen> {
     );
   }
 
+  // Obtiene 150 Pokémon de la API pokeapi.co
   Future<List> _fetchPokemonList() async {
     final futures = List.generate(150, (i) async {
       final id = i + 1;

@@ -1,12 +1,14 @@
 import 'package:flutter/material.dart';
 
-// TODO: ESTE ES SOLAMENTE CODIGO DE PRUEBA, CAMBIAR POR UN DISEÑO MAS IMPLEMENTADO
-
+// Este main ejecuta SOLO esta pantalla (sirve para pruebas)
+// Normalmente no usarás dos main() en la misma app
 void main() => runApp(const HomeScreen());
 
+// Pantalla principal con tabs ("Mis equipos" y "Pokedex")
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
 
+  // Lista estática de pestañas
   static const List<Tab> tabs = <Tab>[
     Tab(text: 'Mis equipos'),
     Tab(text: 'Pokedex'),
@@ -19,30 +21,35 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
+    // MaterialApp aquí es independiente, se podría unificar con el main.dart
     return const MaterialApp(home: TabControllerExample(tabs: HomeScreen.tabs));
   }
 }
 
+// Widget que controla las pestañas usando DefaultTabController
 class TabControllerExample extends StatelessWidget {
   const TabControllerExample({required this.tabs, super.key});
 
-  final List<Tab> tabs;
+  final List<Tab> tabs; // Pestañas recibidas como parámetro
 
   @override
   Widget build(BuildContext context) {
     return DefaultTabController(
-      length: tabs.length,
+      length: tabs.length, // Número de pestañas
       child: DefaultTabControllerListener(
         onTabChanged: (int index) {
-          //debugPrint('tab changed: $index');
+          // Aquí podrías reaccionar cuando se cambia de pestaña
         },
         child: Scaffold(
-          appBar: AppBar(bottom: TabBar(tabs: tabs)),
+          appBar: AppBar(
+            bottom: TabBar(tabs: tabs), // Barra de pestañas
+          ),
           body: TabBarView(
+            // Contenido de cada pestaña
             children: tabs.map((Tab tab) {
               return Center(
                 child: Text(
-                  '${tab.text!} Tab',
+                  '${tab.text!} Tab', // Muestra el nombre de la pestaña
                   style: Theme.of(context).textTheme.headlineSmall,
                 ),
               );
@@ -54,15 +61,15 @@ class TabControllerExample extends StatelessWidget {
   }
 }
 
+// Este widget escucha cambios en el tab activo
 class DefaultTabControllerListener extends StatefulWidget {
   const DefaultTabControllerListener({
-    required this.onTabChanged,
+    required this.onTabChanged, // Función que se ejecuta al cambiar de tab
     required this.child,
     super.key,
   });
 
   final ValueChanged<int> onTabChanged;
-
   final Widget child;
 
   @override
@@ -78,22 +85,23 @@ class _DefaultTabControllerListenerState
   void didChangeDependencies() {
     super.didChangeDependencies();
 
+    // Obtiene el controlador de pestañas
     final TabController? defaultTabController = DefaultTabController.maybeOf(
       context,
     );
 
+    // Si no hay DefaultTabController, lanza un error
     assert(() {
       if (defaultTabController == null) {
-        // Cambiar por algo más creativo
         throw FlutterError(
-          'No DefaultTabController for ${widget.runtimeType}.\n'
-          'When creating a ${widget.runtimeType}, you must ensure that there '
-          'is a DefaultTabController above the ${widget.runtimeType}.',
+          'No DefaultTabController para ${widget.runtimeType}.\n'
+          'Debes envolver este widget en un DefaultTabController.',
         );
       }
       return true;
     }());
 
+    // Si el controlador cambia, actualizamos el listener
     if (defaultTabController != _controller) {
       _controller?.removeListener(_listener);
       _controller = defaultTabController;
@@ -101,14 +109,16 @@ class _DefaultTabControllerListenerState
     }
   }
 
+  // Listener que se ejecuta cuando cambia de pestaña
   void _listener() {
     final TabController? controller = _controller;
 
+    // Si el cambio de tab aún está en transición, no hacer nada
     if (controller == null || controller.indexIsChanging) {
       return;
     }
 
-    widget.onTabChanged(controller.index);
+    widget.onTabChanged(controller.index); // Ejecuta callback
   }
 
   @override
@@ -119,6 +129,6 @@ class _DefaultTabControllerListenerState
 
   @override
   Widget build(BuildContext context) {
-    return widget.child;
+    return widget.child; // Devuelve el widget hijo
   }
 }
