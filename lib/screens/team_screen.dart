@@ -113,7 +113,7 @@ class _TeamScreenState extends State<TeamScreen> {
                   "pokemones",
                   {"equipo": idEquipo},
                   "id = ?",
-                  [idPokemon - 1],
+                  [idPokemon],
                 );
               }
             } else {
@@ -127,12 +127,12 @@ class _TeamScreenState extends State<TeamScreen> {
                 [idEquipo],
               );
               // Luego, asigna los seleccionados
-              for (final index in _seleccionados) {
+              for (final idPokemon in _seleccionados) {
                 await BaseDatos.instance.update(
                   "pokemones",
                   {"equipo": idEquipo},
                   "id = ?",
-                  [index + 1],
+                  [idPokemon], // Usa el ID real, no el índice ni -1
                 );
               }
             }
@@ -290,8 +290,8 @@ class _TeamScreenState extends State<TeamScreen> {
                   mainAxisSpacing: 8,
                   crossAxisSpacing: 8,
                   childAspectRatio: (orientation == Orientation.portrait
-                      ? 0.8
-                      : 1.2),
+                      ? 0.65
+                      : 0.95),
                 ),
                 itemCount: data.length,
                 itemBuilder: (context, index) {
@@ -300,12 +300,13 @@ class _TeamScreenState extends State<TeamScreen> {
                   final imagen = pokemon["imagen"];
                   final tipo = pokemon["tipo"];
 
-                  bool isSelected = _seleccionados.contains(index);
+                  final idPokemon = pokemon["id"];
+                  bool isSelected = _seleccionados.contains(idPokemon);
 
                   return Card(
                     elevation: 1,
                     color: isSelected
-                        ? Colors.lightBlue.shade100
+                        ? Colors.lightGreen.shade200
                         : Colors.white,
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
@@ -328,15 +329,13 @@ class _TeamScreenState extends State<TeamScreen> {
                           onPressed: () {
                             setState(() {
                               if (isSelected) {
-                                _seleccionados.remove(
-                                  index,
-                                ); // Quita de la selección
+                                _seleccionados.remove(idPokemon);
                               } else {
                                 try {
                                   if (_seleccionados.isNotEmpty) {
                                     _validarLista();
                                   }
-                                  _seleccionados.add(index);
+                                  _seleccionados.add(idPokemon);
                                 } catch (e) {
                                   desplegarError(e);
                                 }
