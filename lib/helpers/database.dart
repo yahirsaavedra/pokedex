@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:pokedexapp/helpers/pokeapi.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
@@ -24,18 +25,25 @@ class BaseDatos {
     final dbPath = await getDatabasesPath();
     final path = join(dbPath, _dbName);
 
+    late final List lista;
+    try {
+      lista = await PokeAPI().fetchPokemonList();
+    } catch (e) {
+      throw "Error al obtener la lista de Pokémones: $e";
+    }
+
     Database db = await openDatabase(
       path,
       version: _dbVersion,
-      onCreate: _onCreate,
-      onUpgrade: _onUpgrade,
+      onCreate: (db, version) => _onCreate(db, version, lista),
+      onOpen: (db) => _onCreate(db, _dbVersion, lista),
     );
 
     return db;
   }
 
   // Crear tablas
-  Future<void> _onCreate(Database db, int version) async {
+  Future<void> _onCreate(Database db, int version, List lista) async {
     await db.execute('''
       CREATE TABLE IF NOT EXISTS pokemones (
         id INTEGER PRIMARY KEY,
@@ -43,6 +51,7 @@ class BaseDatos {
         tipo VARCHAR(50),
         altura DECIMAL(10, 2),
         peso DECIMAL(10, 2),
+        habilidad VARCHAR(100),
         imagen VARCHAR(2048),
         descripcion TEXT,
         equipo INTEGER,
@@ -57,35 +66,24 @@ class BaseDatos {
       );
     ''');
 
-    List lista = await PokeAPI().fetchPokemonList();
+    debugPrint(lista.toString());
 
-    List.generate(lista.length, (i) async {
+    for (var i = 0; i < lista.length; i++) {
       await db.execute('''
-      INSERT OR IGNORE INTO pokemones VALUES (
-        ${lista[i]["id"]},
-        "${lista[i]["name"]}",
-        "${lista[i]["type"]}",
-        ${lista[i]["height"]},
-        ${lista[i]["weight"]},
-        "${lista[i]["sprites"]["front_default"]}",
-        "${lista[i]["description"]}",
-        NULL
-      );
-    ''');
-    });
-  }
+    INSERT OR IGNORE INTO pokemones VALUES (
+      ${lista[i]["id"]},
+      "${lista[i]["name"]}",
+      "${lista[i]["type"]}",
+      ${lista[i]["height"]},
+      ${lista[i]["weight"]},
+      "${lista[i]["ability"]}",
+      "${lista[i]["sprites"]["front_default"]}",
+      "${lista[i]["description"]}",
+      NULL
+    );
+  ''');
 
-  // Actualizar estructura de la BD si cambia la versión
-  Future<void> _onUpgrade(Database db, int oldVersion, int newVersion) async {
-    // Ejemplo: si en la versión 2 agregas una tabla nueva
-    if (oldVersion < 2) {
-      await db.execute('''
-        CREATE TABLE products (
-          id INTEGER PRIMARY KEY AUTOINCREMENT,
-          name TEXT NOT NULL,
-          price REAL NOT NULL
-        )
-      ''');
+      debugPrint("Pokemon insertado: ${lista[i]["name"]} - $i");
     }
   }
 
@@ -93,6 +91,11 @@ class BaseDatos {
   Future<int> insert(String table, Map<String, dynamic> values) async {
     final db = await database;
     return await db.insert(table, values);
+  }
+
+  Future<List<Map<String, dynamic>>> query(String table, int id) async {
+    final db = await database;
+    return await db.query(table, where: 'id = ?', whereArgs: [id]);
   }
 
   Future<List<Map<String, dynamic>>> queryAll(String table) async {

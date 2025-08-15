@@ -20,7 +20,7 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     // MaterialApp aquí es independiente, se podría unificar con el main.dart
-    return const MaterialApp(home: TabControllerExample(tabs: HomeScreen.tabs));
+    return TabControllerExample(tabs: HomeScreen.tabs);
   }
 }
 

@@ -1,3 +1,5 @@
+// TODO API TERMINADA
+
 import 'dart:convert' show jsonDecode;
 import 'package:http/http.dart' as http show get;
 
@@ -12,10 +14,17 @@ class PokeAPI {
     }
 
     String? _getSpanishFlavor(List items) {
-      return items.firstWhere(
+      return items.lastWhere(
         (item) => item['language']['name'] == 'es',
         orElse: () => null,
       )?['flavor_text'];
+    }
+
+    String? _getSpanishAbility(List items) {
+      return items.firstWhere(
+        (item) => item['language']['name'] == 'es',
+        orElse: () => null,
+      )?['name'];
     }
 
     // Generar 150 requests en paralelo
@@ -35,6 +44,7 @@ class PokeAPI {
 
       final pokemonTypes = pokemon["types"] as List;
       final speciesUrl = pokemon["species"]["url"];
+      final abilities = pokemon["abilities"] as List;
 
       // Peticiones de tipos y especies en paralelo
       final futures = [
@@ -60,17 +70,33 @@ class PokeAPI {
             "flavor": _getSpanishFlavor(data["flavor_text_entries"]),
           };
         }(),
+        // Habilidades
+        ...abilities.map((abilityEntry) async {
+          final abilityUrl = abilityEntry["ability"]["url"];
+          final res = await http.get(Uri.parse(abilityUrl));
+          if (res.statusCode != 200) {
+            throw Exception('Error al obtener habilidad de Pokémon $id');
+          }
+          final data = jsonDecode(res.body) as Map<String, dynamic>;
+          return _getSpanishAbility(data["names"]) ?? data["name"];
+        }),
       ];
 
       final results = await Future.wait(futures);
 
       // Los últimos resultados son la especie
-      final speciesData = results.last as Map<String, dynamic>;
+      final speciesData = results[pokemonTypes.length] as Map<String, dynamic>;
       final typeNames = results.sublist(0, pokemonTypes.length);
+      final abilitiesNames = results.sublist(
+        pokemonTypes.length + 1,
+        results.length,
+      );
 
       pokemon["type"] = typeNames.first;
       pokemon["name"] = speciesData["name"];
-      pokemon["description"] = speciesData["flavor"] ?? "???";
+      pokemon["description"] =
+          speciesData["flavor"].replaceAll("\n", " ") ?? "???";
+      pokemon["ability"] = abilitiesNames.first;
 
       return pokemon;
     });

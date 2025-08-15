@@ -9,6 +9,7 @@ void main() async {
   final peso = pokemon[0]["weight"];
   final imagen = pokemon[0]["sprites"]["front_default"];
   final descripcion = pokemon[0]["description"];
+  final habilidades = pokemon[0]["ability"];
   print(id);
   print(nombre);
   print(tipo);
@@ -16,4 +17,5 @@ void main() async {
   print(peso);
   print(imagen);
   print(descripcion);
+  print(habilidades);
 }

@@ -1,5 +1,5 @@
 name: pokedexapp
-description: "A new Flutter project."
+description: "App sencilla para mostrar Pokemones y formar equipos."
 publish_to: 'none'
 version: 1.0.0+1
 
