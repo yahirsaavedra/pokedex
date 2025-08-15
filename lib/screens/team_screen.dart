@@ -149,8 +149,8 @@ class _TeamScreenState extends State<TeamScreen> {
         style: FilledButton.styleFrom(
           minimumSize: Size(
             _screen.width * 0.2,
-            _screen.width * 0.07,
-          ), // PENDIENTE CAMBIAR UN WIDTH POR HEIGHT, OOPS!
+            _screen.height * 0.07,
+          ),
           padding: const EdgeInsets.symmetric(vertical: 10),
           textStyle: const TextStyle(fontSize: 18),
           backgroundColor: Colors.red,
@@ -164,22 +164,36 @@ class _TeamScreenState extends State<TeamScreen> {
         return Scaffold(
           appBar: AppBar(shadowColor: Colors.black, elevation: 1),
           backgroundColor: Colors.grey.shade200,
-          body: Padding(
-            padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 20),
-            child: Form(
-              key: _formKey,
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.start,
-                children: [
-                  botonRegresar,
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [header["titulo"], header["boton"]],
+          body: SafeArea(
+            // <-- Agrega este widget
+            child: SingleChildScrollView(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(
+                  vertical: 10,
+                  horizontal: 20,
+                ),
+                child: Form(
+                  key: _formKey,
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    children: [
+                      botonRegresar,
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [header["titulo"], header["boton"]],
+                      ),
+                      divisor,
+                      formularioEquipo(orientation),
+                      SizedBox(height: 16),
+                      SizedBox(
+                        height: orientation == Orientation.portrait
+                            ? MediaQuery.of(context).size.height * 0.45
+                            : MediaQuery.of(context).size.height * 0.55,
+                        child: listaPokemones(),
+                      ),
+                    ],
                   ),
-                  divisor,
-                  formularioEquipo(orientation), // Campos de texto
-                  listaPokemones(), // Lista de Pokémon en Grid
-                ],
+                ),
               ),
             ),
           ),
@@ -290,8 +304,8 @@ class _TeamScreenState extends State<TeamScreen> {
                   mainAxisSpacing: 8,
                   crossAxisSpacing: 8,
                   childAspectRatio: (orientation == Orientation.portrait
-                      ? 0.65
-                      : 0.95),
+                      ? 0.6
+                      : 0.75),
                 ),
                 itemCount: data.length,
                 itemBuilder: (context, index) {

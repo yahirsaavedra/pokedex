@@ -38,7 +38,7 @@ class PokedexScreen extends StatelessWidget {
                     mainAxisSpacing: 8,
                     crossAxisSpacing: 8,
                     childAspectRatio: (orientation == Orientation.portrait
-                        ? 0.6
+                        ? 0.5
                         : 1),
                   ),
                   itemCount: data.length,

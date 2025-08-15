@@ -1,5 +1,3 @@
-// TODO API TERMINADA
-
 import 'dart:convert' show jsonDecode;
 import 'package:http/http.dart' as http show get;
 
