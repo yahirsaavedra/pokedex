@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:pokedexapp/helpers/database.dart';
+import 'dart:math' as math;
 
 class PokemonModal extends StatelessWidget {
   final int pokemonId;
@@ -33,7 +34,12 @@ class PokemonModal extends StatelessWidget {
             children: [
               Image(image: NetworkImage(imagen)),
               Text(nombre, style: const TextStyle(fontSize: 16)),
-              Chip(label: Text(tipo)), // Mejor que ElevatedButton
+              Chip(
+                label: Text(tipo),
+                backgroundColor: Color(
+                  (math.Random().nextDouble() * 0xFFFFFF).toInt(),
+                ),
+              ),
               Table(
                 children: <TableRow>[
                   TableRow(

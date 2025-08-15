@@ -1,19 +1,27 @@
 import 'package:flutter/material.dart';
 import 'package:pokedexapp/screens/home_screen.dart';
 import 'package:pokedexapp/helpers/database.dart';
+import 'dart:math' as math;
 
 // Pantalla donde se crea o modifica un equipo de Pokémon
 class TeamScreen extends StatefulWidget {
-  const TeamScreen({super.key});
+  final Map<String, dynamic>? equipo;
+  final List<int>? pokemonesSeleccionados;
+  final bool modoEdicion;
+
+  const TeamScreen({
+    super.key,
+    this.equipo,
+    this.pokemonesSeleccionados,
+    this.modoEdicion = false,
+  });
 
   @override
   State<TeamScreen> createState() => _TeamScreenState();
 }
 
 class _TeamScreenState extends State<TeamScreen> {
-  // Variables// Lista de Pokémon (se obtiene de la API)
-  late Size _screen; // Tamaño de la pantalla
-  late bool _nuevoEquipo; // Si estamos creando un nuevo equipo o editando uno
+  late Size _screen;
 
   final SizedBox _separadorV = const SizedBox(width: 8); // Separador horizontal
 
@@ -24,13 +32,23 @@ class _TeamScreenState extends State<TeamScreen> {
 
   final _formKey = GlobalKey<FormState>(); // Clave para validar el formulario
 
-  // Conjunto de índices seleccionados del GridView
+  late bool _nuevoEquipo;
   final Set<int> _seleccionados = {};
 
   @override
   void initState() {
-    _nuevoEquipo = true; // Por defecto estamos creando
-    super.initState(); // Carga la lista de Pokémon
+    super.initState();
+    _nuevoEquipo = !(widget.modoEdicion);
+
+    if (widget.equipo != null) {
+      _nombreController.text = widget.equipo!["nombre"] ?? "";
+      _creadorController.text = widget.equipo!["creador"] ?? "";
+      _descripcionController.text = widget.equipo!["descripcion"] ?? "";
+    }
+
+    if (widget.pokemonesSeleccionados != null) {
+      _seleccionados.addAll(widget.pokemonesSeleccionados!);
+    }
   }
 
   @override
@@ -78,33 +96,53 @@ class _TeamScreenState extends State<TeamScreen> {
       "boton": FilledButton(
         onPressed: () async {
           try {
-            _validarFormulario(); // Valida campos de texto
-            _validarLista(); // Valida selección de Pokémon
+            _validarFormulario();
+            _validarLista();
 
-            // Insertar equipo en la BD
-            final idEquipo = await BaseDatos.instance.insert("equipos", {
-              "nombre": _nombreController.text.trim(),
-              "creador": _creadorController.text.trim(),
-              "descripcion": _descripcionController.text.trim(),
-            });
+            if (_nuevoEquipo) {
+              // Crear equipo nuevo
+              final idEquipo = await BaseDatos.instance.insert("equipos", {
+                "nombre": _nombreController.text.trim(),
+                "creador": _creadorController.text.trim(),
+                "descripcion": _descripcionController.text.trim(),
+              });
 
-            // Asignar los Pokémon seleccionados al equipo
-            for (final index in _seleccionados) {
+              // Asignar los Pokémon seleccionados al equipo
+              for (final idPokemon in _seleccionados) {
+                await BaseDatos.instance.update(
+                  "pokemones",
+                  {"equipo": idEquipo},
+                  "id = ?",
+                  [idPokemon - 1],
+                );
+              }
+            } else {
+              // Editar equipo existente: actualizar pokemones
+              final idEquipo = widget.equipo!["id"];
+              // Primero, desasigna todos los pokemones de este equipo
               await BaseDatos.instance.update(
                 "pokemones",
-                {"equipo": idEquipo},
-                "id = ?",
-                [index + 1], // asumiendo que el index coincide con el id - 1
+                {"equipo": null},
+                "equipo = ?",
+                [idEquipo],
               );
+              // Luego, asigna los seleccionados
+              for (final index in _seleccionados) {
+                await BaseDatos.instance.update(
+                  "pokemones",
+                  {"equipo": idEquipo},
+                  "id = ?",
+                  [index + 1],
+                );
+              }
             }
 
-            // Regresar a la pantalla principal
             Navigator.pushReplacement(
               context,
               MaterialPageRoute(builder: (context) => const HomeScreen()),
             );
           } catch (e) {
-            desplegarError(e); // Muestra error si falla algo
+            desplegarError(e);
           }
         },
 
@@ -274,6 +312,12 @@ class _TeamScreenState extends State<TeamScreen> {
                       children: [
                         Image(image: NetworkImage(imagen)),
                         Text(nombre, style: const TextStyle(fontSize: 16)),
+                        Chip(
+                          label: Text(tipo),
+                          backgroundColor: Color(
+                            (math.Random().nextDouble() * 0xFFFFFF).toInt(),
+                          ).withAlpha(255),
+                        ),
                         const Divider(
                           height: 30,
                           thickness: 0.5,

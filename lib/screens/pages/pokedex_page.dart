@@ -1,14 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:pokedexapp/helpers/database.dart';
 import 'package:pokedexapp/modals/pokemon_modal.dart';
+import 'dart:math' as math;
 
 class PokedexScreen extends StatelessWidget {
   const PokedexScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final SizedBox _separadorV = const SizedBox(height: 20);
-
     return Expanded(
       child: FutureBuilder<List>(
         future: BaseDatos.instance.queryAll(
@@ -64,8 +63,12 @@ class PokedexScreen extends StatelessWidget {
                           children: [
                             Image(image: NetworkImage(imagen)),
                             Text(nombre, style: const TextStyle(fontSize: 16)),
-                            /* ESTE NO DEBERIA SER UN ELEVATEDBUTTON, CAMBIAR DISEÑO */
-                            ElevatedButton(onPressed: () {}, child: Text(tipo)),
+                            Chip(
+                              label: Text(tipo),
+                              backgroundColor: Color(
+                                (math.Random().nextDouble() * 0xFFFFFF).toInt(),
+                              ).withAlpha(255),
+                            ),
                           ],
                         ),
                       ),

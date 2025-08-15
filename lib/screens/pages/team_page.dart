@@ -1,14 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:pokedexapp/helpers/database.dart';
 import 'package:pokedexapp/screens/team_screen.dart';
+import 'dart:math' as math;
 
 class MisEquiposScreen extends StatelessWidget {
   const MisEquiposScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
-    Size _screen = MediaQuery.sizeOf(context);
-
     return Padding(
       padding: const EdgeInsets.all(24.0),
       child: Column(
@@ -51,71 +50,103 @@ class MisEquiposScreen extends StatelessWidget {
                 if (equipos.isEmpty) {
                   return const Center(child: Text("No hay equipos creados."));
                 }
-                return GridView.builder(
-                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: 3,
-                    mainAxisSpacing: 32,
-                    crossAxisSpacing: 32,
-                    childAspectRatio: 0.8,
-                  ),
-                  itemCount: equipos.length,
-                  itemBuilder: (context, index) {
-                    final equipo = equipos[index] as Map<String, dynamic>;
-                    final nombre = equipo["nombre"] ?? "";
-                    final descripcion = equipo["descripcion"] ?? "";
-                    final creador = equipo["creador"] ?? "";
-                    final color = _getColorForCreador(creador);
+                return OrientationBuilder(
+                  builder: (context, orientation) {
+                    return GridView.builder(
+                      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                        crossAxisCount: orientation == Orientation.portrait
+                            ? 2
+                            : 3,
+                        mainAxisSpacing: 32,
+                        crossAxisSpacing: 32,
+                        childAspectRatio: 0.8,
+                      ),
+                      itemCount: equipos.length,
+                      itemBuilder: (context, index) {
+                        final equipo = equipos[index] as Map<String, dynamic>;
+                        final nombre = equipo["nombre"] ?? "";
+                        final descripcion = equipo["descripcion"] ?? "";
+                        final creador = equipo["creador"] ?? "";
+                        final id = equipo["id"];
 
-                    return Card(
-                      elevation: 3,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(20),
-                      ),
-                      child: Padding(
-                        padding: const EdgeInsets.all(20.0),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              nombre,
-                              style: const TextStyle(
-                                fontWeight: FontWeight.bold,
-                                fontSize: 22,
-                              ),
-                            ),
-                            const SizedBox(height: 8),
-                            Text(
-                              descripcion,
-                              style: const TextStyle(
-                                fontSize: 16,
-                                color: Colors.black87,
-                              ),
-                            ),
-                            const Spacer(),
-                            Align(
-                              alignment: Alignment.bottomLeft,
-                              child: Container(
-                                decoration: BoxDecoration(
-                                  color: color,
-                                  borderRadius: BorderRadius.circular(20),
+                        return GestureDetector(
+                          onTap: () async {
+                            // Obtén los pokemones del equipo
+                            final pokemonesEquipo = await BaseDatos.instance
+                                .queryAll("pokemones");
+                            final seleccionados = pokemonesEquipo
+                                .where((p) => p["equipo"] == id)
+                                .map((p) => p["id"] as int)
+                                .toList();
+
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => TeamScreen(
+                                  equipo: equipo,
+                                  pokemonesSeleccionados: seleccionados,
+                                  modoEdicion: true,
                                 ),
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 24,
-                                  vertical: 8,
-                                ),
-                                child: Text(
-                                  creador,
-                                  style: const TextStyle(
-                                    color: Colors.white,
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 16,
+                              ),
+                            );
+                          },
+                          child: Card(
+                            elevation: 3,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(20),
+                            ),
+                            child: Padding(
+                              padding: const EdgeInsets.all(20.0),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    nombre,
+                                    style: const TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 22,
+                                    ),
                                   ),
-                                ),
+                                  const SizedBox(height: 8),
+                                  Text(
+                                    descripcion,
+                                    style: const TextStyle(
+                                      fontSize: 16,
+                                      color: Colors.black87,
+                                    ),
+                                  ),
+                                  const Spacer(),
+                                  Align(
+                                    alignment: Alignment.bottomLeft,
+                                    child: Container(
+                                      decoration: BoxDecoration(
+                                        color: Color(
+                                          (math.Random().nextDouble() *
+                                                  0xFFFFFF)
+                                              .toInt(),
+                                        ).withAlpha(255),
+                                        borderRadius: BorderRadius.circular(20),
+                                      ),
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 24,
+                                        vertical: 8,
+                                      ),
+                                      child: Text(
+                                        creador,
+                                        style: const TextStyle(
+                                          color: Colors.white,
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 16,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ],
                               ),
                             ),
-                          ],
-                        ),
-                      ),
+                          ),
+                        );
+                      },
                     );
                   },
                 );
@@ -125,19 +156,5 @@ class MisEquiposScreen extends StatelessWidget {
         ],
       ),
     );
-  }
-
-  Color _getColorForCreador(String creador) {
-    // Puedes personalizar los colores por creador si lo deseas
-    switch (creador.toLowerCase()) {
-      case "johana":
-        return Colors.green;
-      case "horario":
-        return Colors.lightBlue;
-      case "martin":
-        return Colors.purple;
-      default:
-        return Colors.grey;
-    }
   }
 }

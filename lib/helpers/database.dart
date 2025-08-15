@@ -1,4 +1,3 @@
-import 'package:flutter/material.dart';
 import 'package:pokedexapp/helpers/pokeapi.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
@@ -56,7 +55,7 @@ class BaseDatos {
         descripcion TEXT,
         equipo INTEGER,
         FOREIGN KEY (equipo) REFERENCES equipos(id)
-      );
+    );
 
       CREATE TABLE IF NOT EXISTS equipos (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -65,8 +64,6 @@ class BaseDatos {
         descripcion TEXT NOT NULL
       );
     ''');
-
-    debugPrint(lista.toString());
 
     for (var i = 0; i < lista.length; i++) {
       await db.execute('''
@@ -82,8 +79,6 @@ class BaseDatos {
       NULL
     );
   ''');
-
-      debugPrint("Pokemon insertado: ${lista[i]["name"]} - $i");
     }
   }
 
