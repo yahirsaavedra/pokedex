@@ -3,11 +3,8 @@ import 'package:pokedexapp/screens/home_screen.dart';
 import 'package:pokedexapp/helpers/database.dart';
 
 // Función principal de la app
-void main() async {
-  WidgetsFlutterBinding.ensureInitialized();
-  await BaseDatos.instance.database;
-
-  runApp(const Pokedex()); // Inicia el widget raíz de la aplicación
+void main() {
+  runApp(const Pokedex());
 }
 
 // Widget principal de la app
@@ -20,8 +17,19 @@ class Pokedex extends StatelessWidget {
     return MaterialApp(
       title: "Pokédex",
       debugShowCheckedModeBanner: false, // Quita la etiqueta "DEBUG"
-      home:
-          const HomeScreen(), // Pantalla inicial (puede cambiarse en el futuro)
+      home: FutureBuilder(
+        future: BaseDatos.instance.database,
+        builder: (context, snapshot) {
+          if (snapshot.connectionState != ConnectionState.done) {
+            // Muestra icono de carga mientras la base se inicializa
+            return const Scaffold(
+              body: Center(child: CircularProgressIndicator()),
+            );
+          }
+          // Cuando la base está lista, muestra la pantalla principal
+          return const HomeScreen();
+        },
+      ),
     );
   }
 }

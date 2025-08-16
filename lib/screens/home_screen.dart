@@ -38,16 +38,19 @@ class TabControllerExample extends StatelessWidget {
         onTabChanged: (int index) {
           // Aquí podrías reaccionar cuando se cambia de pestaña
         },
-        child: Scaffold(
-          appBar: AppBar(
-            bottom: TabBar(tabs: tabs), // Barra de pestañas
-          ),
+        child: SafeArea(
+          // <-- Envuelve el Scaffold con SafeArea
+          child: Scaffold(
+            appBar: AppBar(
+              bottom: TabBar(tabs: tabs), // Barra de pestañas
+            ),
 
-          body: TabBarView(
-            children: const [
-              MisEquiposScreen(), // Archivo nuevo 1
-              PokedexScreen(), // Archivo nuevo 2
-            ],
+            body: TabBarView(
+              children: const [
+                MisEquiposScreen(), // Archivo nuevo 1
+                PokedexScreen(), // Archivo nuevo 2
+              ],
+            ),
           ),
         ),
       ),

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:pokedexapp/screens/home_screen.dart';
 import 'package:pokedexapp/helpers/database.dart';
-import 'dart:math' as math;
+import 'package:pokedexapp/widgets/pokemon_card.dart';
 
 // Pantalla donde se crea o modifica un equipo de Pokémon
 class TeamScreen extends StatefulWidget {
@@ -147,10 +147,7 @@ class _TeamScreenState extends State<TeamScreen> {
         },
 
         style: FilledButton.styleFrom(
-          minimumSize: Size(
-            _screen.width * 0.2,
-            _screen.height * 0.07,
-          ),
+          minimumSize: Size(_screen.width * 0.2, _screen.height * 0.07),
           padding: const EdgeInsets.symmetric(vertical: 10),
           textStyle: const TextStyle(fontSize: 18),
           backgroundColor: Colors.red,
@@ -278,95 +275,37 @@ class _TeamScreenState extends State<TeamScreen> {
   }
 
   Widget listaPokemones() {
-    return Expanded(
-      child: FutureBuilder<List>(
-        future: BaseDatos.instance.queryAll(
-          "pokemones",
-        ), // Espera la lista de Pokémon
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(
-              child: CircularProgressIndicator(),
-            ); // Cargando...
-          }
-          if (snapshot.hasError) {
-            return Center(child: Text("Error: ${snapshot.error}"));
-          }
-
-          final data = snapshot.data!;
-
-          return OrientationBuilder(
-            builder: (context, orientation) {
-              return GridView.builder(
-                padding: const EdgeInsets.only(top: 12),
-                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: (orientation == Orientation.portrait ? 2 : 3),
-                  mainAxisSpacing: 8,
-                  crossAxisSpacing: 8,
-                  childAspectRatio: (orientation == Orientation.portrait
-                      ? 0.6
-                      : 0.75),
-                ),
-                itemCount: data.length,
-                itemBuilder: (context, index) {
-                  final pokemon = data[index] as Map<String, dynamic>;
-                  final nombre = pokemon["nombre"];
-                  final imagen = pokemon["imagen"];
-                  final tipo = pokemon["tipo"];
-
-                  final idPokemon = pokemon["id"];
-                  bool isSelected = _seleccionados.contains(idPokemon);
-
-                  return Card(
-                    elevation: 1,
-                    color: isSelected
-                        ? Colors.lightGreen.shade200
-                        : Colors.white,
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Image(image: NetworkImage(imagen)),
-                        Text(nombre, style: const TextStyle(fontSize: 16)),
-                        Chip(
-                          label: Text(tipo),
-                          backgroundColor: Color(
-                            (math.Random().nextDouble() * 0xFFFFFF).toInt(),
-                          ).withAlpha(255),
-                        ),
-                        const Divider(
-                          height: 30,
-                          thickness: 0.5,
-                          indent: 20,
-                          color: Colors.grey,
-                        ),
-                        TextButton(
-                          onPressed: () {
-                            setState(() {
-                              if (isSelected) {
-                                _seleccionados.remove(idPokemon);
-                              } else {
-                                try {
-                                  if (_seleccionados.isNotEmpty) {
-                                    _validarLista();
-                                  }
-                                  _seleccionados.add(idPokemon);
-                                } catch (e) {
-                                  desplegarError(e);
-                                }
-                              }
-                            });
-                          },
-                          child: Text(isSelected ? "Eliminar" : "Añadir"),
-                        ),
-                      ],
-                    ),
-                  );
-                },
-              );
-            },
-          );
-        },
-      ),
+    return FutureBuilder<List>(
+      future: BaseDatos.instance.queryAll("pokemones"),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Center(child: CircularProgressIndicator());
+        }
+        if (snapshot.hasError) {
+          return Center(child: Text("Error: ${snapshot.error}"));
+        }
+        final data = snapshot.data!;
+        return PokemonGrid(
+          pokemones: data,
+          seleccionados: _seleccionados,
+          onSelect: (idPokemon, selected) {
+            setState(() {
+              if (selected) {
+                try {
+                  if (_seleccionados.isNotEmpty) {
+                    _validarLista();
+                  }
+                  _seleccionados.add(idPokemon);
+                } catch (e) {
+                  desplegarError(e);
+                }
+              } else {
+                _seleccionados.remove(idPokemon);
+              }
+            });
+          },
+        );
+      },
     );
   }
 
@@ -377,6 +316,84 @@ class _TeamScreenState extends State<TeamScreen> {
         content: Text(error.toString().split(": ")[1]),
         backgroundColor: Colors.red,
       ),
+    );
+  }
+}
+
+// Nuevo widget para el grid, mantiene el scroll y solo actualiza los cards necesarios
+class PokemonGrid extends StatefulWidget {
+  final List pokemones;
+  final Set<int> seleccionados;
+  final void Function(int idPokemon, bool selected) onSelect;
+
+  const PokemonGrid({
+    super.key,
+    required this.pokemones,
+    required this.seleccionados,
+    required this.onSelect,
+  });
+
+  @override
+  State<PokemonGrid> createState() => _PokemonGridState();
+}
+
+class _PokemonGridState extends State<PokemonGrid> {
+  late Set<int> seleccionados;
+
+  @override
+  void initState() {
+    super.initState();
+    seleccionados = Set<int>.from(widget.seleccionados);
+  }
+
+  @override
+  void didUpdateWidget(covariant PokemonGrid oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.seleccionados != widget.seleccionados) {
+      seleccionados = Set<int>.from(widget.seleccionados);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final orientation = MediaQuery.of(context).orientation;
+    return GridView.builder(
+      padding: const EdgeInsets.only(top: 12),
+      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: (orientation == Orientation.portrait ? 2 : 3),
+        mainAxisSpacing: 8,
+        crossAxisSpacing: 8,
+        childAspectRatio: (orientation == Orientation.portrait ? 0.6 : 0.75),
+      ),
+      itemCount: widget.pokemones.length,
+      itemBuilder: (context, index) {
+        final pokemon = widget.pokemones[index] as Map<String, dynamic>;
+        final nombre = pokemon["nombre"];
+        final imagen = pokemon["imagen"];
+        final tipo = pokemon["tipo"];
+        final idPokemon = pokemon["id"];
+        final isSelected = seleccionados.contains(idPokemon);
+
+        return PokemonCard(
+          nombre: nombre,
+          imagen: imagen,
+          tipo: tipo,
+          isSelected: isSelected,
+          extra: TextButton(
+            onPressed: () {
+              setState(() {
+                widget.onSelect(idPokemon, !isSelected);
+                if (isSelected) {
+                  seleccionados.remove(idPokemon);
+                } else {
+                  seleccionados.add(idPokemon);
+                }
+              });
+            },
+            child: Text(isSelected ? "Eliminar" : "Añadir"),
+          ),
+        );
+      },
     );
   }
 }
