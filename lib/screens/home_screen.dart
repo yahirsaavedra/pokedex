@@ -19,7 +19,6 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
-    // MaterialApp aquí es independiente, se podría unificar con el main.dart
     return TabControllerExample(tabs: HomeScreen.tabs);
   }
 }
@@ -41,8 +40,37 @@ class TabControllerExample extends StatelessWidget {
         child: SafeArea(
           // <-- Envuelve el Scaffold con SafeArea
           child: Scaffold(
+            backgroundColor: Colors.white.withOpacity(
+              0.95,
+            ), // Fondo blanco opaco
             appBar: AppBar(
-              bottom: TabBar(tabs: tabs), // Barra de pestañas
+              automaticallyImplyLeading: false, // No mostrar botón de volver
+              backgroundColor: Colors.white.withOpacity(0.95),
+              elevation: 0,
+              bottom: TabBar(
+                tabs: tabs,
+                indicator: UnderlineTabIndicator(
+                  borderSide: BorderSide(
+                    color: Color(0xFFB3E5FC), // Azul claro
+                    width: 8,
+                  ),
+                ),
+                labelPadding: EdgeInsets.only(
+                  bottom: 12,
+                ), // Espaciado debajo del texto
+                labelStyle: TextStyle(
+                  fontFamily: 'CenturyGothic',
+                  fontWeight: FontWeight.bold,
+                  fontSize: 16,
+                ),
+                unselectedLabelStyle: TextStyle(
+                  fontFamily: 'CenturyGothic',
+                  fontWeight: FontWeight.normal,
+                  fontSize: 16,
+                ),
+                labelColor: Colors.black,
+                unselectedLabelColor: Colors.black,
+              ),
             ),
 
             body: TabBarView(

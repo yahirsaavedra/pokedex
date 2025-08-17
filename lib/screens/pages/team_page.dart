@@ -32,7 +32,11 @@ class MisEquiposScreen extends StatelessWidget {
                       horizontal: 32,
                       vertical: 12,
                     ),
-                    textStyle: const TextStyle(fontSize: 18),
+                    textStyle: const TextStyle(
+                      fontFamily: 'CenturyGothic',
+                      fontWeight: FontWeight.bold,
+                      fontSize: 18,
+                    ),
                   ),
                   child: const Text("Crear nuevo equipo"),
                 ),
@@ -55,14 +59,18 @@ class MisEquiposScreen extends StatelessWidget {
                   }
                   return OrientationBuilder(
                     builder: (context, orientation) {
+                      final crossAxisCount = orientation == Orientation.portrait
+                          ? 2
+                          : 3;
+                      final aspectRatio = orientation == Orientation.portrait
+                          ? 1.05
+                          : 1.35;
                       return GridView.builder(
                         gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                          crossAxisCount: orientation == Orientation.portrait
-                              ? 2
-                              : 3,
-                          mainAxisSpacing: 32,
-                          crossAxisSpacing: 32,
-                          childAspectRatio: 0.8,
+                          crossAxisCount: crossAxisCount,
+                          mainAxisSpacing: 20,
+                          crossAxisSpacing: 20,
+                          childAspectRatio: aspectRatio,
                         ),
                         itemCount: equipos.length,
                         itemBuilder: (context, index) {
@@ -72,9 +80,19 @@ class MisEquiposScreen extends StatelessWidget {
                           final creador = equipo["creador"] ?? "";
                           final id = equipo["id"];
 
+                          // Acortar descripción si supera 3 párrafos
+                          final descripcionParrafos = descripcion.split('\n');
+                          String descripcionFinal;
+                          if (descripcionParrafos.length > 3) {
+                            descripcionFinal =
+                                descripcionParrafos.sublist(0, 3).join('\n') +
+                                '...';
+                          } else {
+                            descripcionFinal = descripcion;
+                          }
+
                           return GestureDetector(
                             onTap: () async {
-                              // Obtén los pokemones del equipo
                               final pokemonesEquipo = await BaseDatos.instance
                                   .queryAll("pokemones");
                               final seleccionados = pokemonesEquipo
@@ -98,51 +116,71 @@ class MisEquiposScreen extends StatelessWidget {
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(20),
                               ),
+                              color: Colors.white,
                               child: Padding(
-                                padding: const EdgeInsets.all(20.0),
+                                padding: const EdgeInsets.all(14.0),
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    Text(
-                                      nombre,
-                                      style: const TextStyle(
-                                        fontWeight: FontWeight.bold,
-                                        fontSize: 22,
+                                    SingleChildScrollView(
+                                      scrollDirection: Axis.horizontal,
+                                      child: Text(
+                                        nombre,
+                                        style: const TextStyle(
+                                          fontFamily: 'CenturyGothic',
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 18,
+                                          color: Colors.black,
+                                        ),
+                                        maxLines: 1,
+                                        overflow: TextOverflow.visible,
                                       ),
                                     ),
-                                    const SizedBox(height: 8),
-                                    Text(
-                                      descripcion,
-                                      style: const TextStyle(
-                                        fontSize: 16,
-                                        color: Colors.black87,
+                                    const SizedBox(height: 6),
+                                    Flexible(
+                                      child: Text(
+                                        descripcionFinal,
+                                        style: const TextStyle(
+                                          fontFamily: 'CenturyGothic',
+                                          fontWeight: FontWeight.normal,
+                                          fontSize: 14,
+                                          color: Colors.grey,
+                                        ),
+                                        maxLines: 6,
+                                        overflow: TextOverflow.ellipsis,
                                       ),
                                     ),
                                     const Spacer(),
-                                    Align(
-                                      alignment: Alignment.bottomLeft,
-                                      child: Container(
-                                        decoration: BoxDecoration(
-                                          color: Color(
-                                            (math.Random().nextDouble() *
-                                                    0xFFFFFF)
-                                                .toInt(),
-                                          ).withAlpha(255),
+                                    Container(
+                                      alignment: Alignment.center,
+                                      margin: const EdgeInsets.symmetric(
+                                        horizontal: 8,
+                                      ),
+                                      width: double.infinity,
+                                      child: Chip(
+                                        backgroundColor: const Color(
+                                          0xFFB3E5FC,
+                                        ),
+                                        label: Text(
+                                          creador,
+                                          textAlign: TextAlign.center,
+                                          style: const TextStyle(
+                                            fontFamily: 'CenturyGothic',
+                                            fontWeight: FontWeight.bold,
+                                            fontSize: 15,
+                                            color: Colors.black,
+                                          ),
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                        shape: RoundedRectangleBorder(
                                           borderRadius: BorderRadius.circular(
-                                            20,
+                                            24,
                                           ),
                                         ),
                                         padding: const EdgeInsets.symmetric(
-                                          horizontal: 24,
-                                          vertical: 8,
-                                        ),
-                                        child: Text(
-                                          creador,
-                                          style: const TextStyle(
-                                            color: Colors.white,
-                                            fontWeight: FontWeight.bold,
-                                            fontSize: 16,
-                                          ),
+                                          horizontal: 16,
+                                          vertical: 6,
                                         ),
                                       ),
                                     ),

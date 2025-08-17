@@ -15,6 +15,7 @@ class Pokedex extends StatelessWidget {
   Widget build(BuildContext context) {
     // MaterialApp es el contenedor de toda la app: tema, rutas, título, etc.
     return MaterialApp(
+      theme: ThemeData(fontFamily: 'CenturyGothic'),
       title: "Pokédex",
       debugShowCheckedModeBanner: false, // Quita la etiqueta "DEBUG"
       home: FutureBuilder(
