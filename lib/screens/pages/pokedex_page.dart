@@ -95,7 +95,7 @@ class PokedexScreen extends StatelessWidget {
                                             tipo,
                                             style: const TextStyle(
                                               fontFamily: 'CenturyGothic',
-                                              fontWeight: FontWeight.normal,
+                                              fontWeight: FontWeight.bold,
                                               fontSize: 14,
                                               color: Colors.white,
                                             ),

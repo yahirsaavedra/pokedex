@@ -7,7 +7,7 @@ class PokemonCard extends StatelessWidget {
   final String tipo;
   final bool isSelected;
   final Widget? extra;
-  final Color? chipColor; // <-- Nuevo parámetro
+  final Color? chipColor;
 
   const PokemonCard({
     super.key,
@@ -16,53 +16,89 @@ class PokemonCard extends StatelessWidget {
     required this.tipo,
     required this.isSelected,
     this.extra,
-    this.chipColor, // <-- Nuevo parámetro
+    this.chipColor,
   });
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      elevation: isSelected ? 6 : 2,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
-      color: Colors.white,
-      child: Padding(
-        padding: const EdgeInsets.all(12),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        return Stack(
           children: [
-            Expanded(child: Image.network(imagen, fit: BoxFit.contain)),
-            const SizedBox(height: 8),
-            Text(
-              nombre,
-              style: const TextStyle(
-                fontFamily: 'CenturyGothic',
-                fontWeight: FontWeight.bold,
-                fontSize: 15,
-                color: Colors.black,
-              ),
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 8),
-            Chip(
-              label: Text(
-                tipo,
-                style: const TextStyle(
-                  fontFamily: 'CenturyGothic',
-                  fontWeight: FontWeight.bold,
-                  fontSize: 13,
-                  color: Colors.white,
+            SizedBox(
+              width: double.infinity, // Ocupa todo el ancho disponible del grid
+              child: Card(
+                elevation: isSelected ? 6 : 2,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(18),
+                ),
+                color: Colors.white,
+                child: Padding(
+                  padding: const EdgeInsets.all(12),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Expanded(
+                        child: Image.network(imagen, fit: BoxFit.contain),
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        nombre,
+                        style: const TextStyle(
+                          fontFamily: 'CenturyGothic',
+                          fontWeight: FontWeight.bold,
+                          fontSize: 15,
+                          color: Colors.black,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        textAlign: TextAlign.center,
+                      ),
+                      const SizedBox(height: 8),
+                      Chip(
+                        label: Text(
+                          tipo,
+                          style: const TextStyle(
+                            fontFamily: 'CenturyGothic',
+                            fontWeight: FontWeight.bold,
+                            fontSize: 13,
+                            color: Colors.white,
+                          ),
+                        ),
+                        backgroundColor: chipColor ?? Colors.grey,
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 0,
+                        ),
+                      ),
+                      if (extra != null) ...[const SizedBox(height: 8), extra!],
+                    ],
+                  ),
                 ),
               ),
-              backgroundColor:
-                  chipColor ?? Colors.grey, // <-- Usa el color recibido
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 0),
             ),
-            if (extra != null) ...[const SizedBox(height: 8), extra!],
+            if (isSelected)
+              Positioned(
+                top: 8,
+                right: 8,
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: Color(0xFF7AC74C),
+                    shape: BoxShape.circle,
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.10),
+                        blurRadius: 4,
+                      ),
+                    ],
+                  ),
+                  padding: const EdgeInsets.all(6),
+                  child: Icon(Icons.check, color: Colors.white, size: 28),
+                ),
+              ),
           ],
-        ),
-      ),
+        );
+      },
     );
   }
 }

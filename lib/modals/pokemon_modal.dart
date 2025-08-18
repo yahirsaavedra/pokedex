@@ -9,7 +9,7 @@ class PokemonModal extends StatelessWidget {
   Widget build(BuildContext context) {
     final isLandscape =
         MediaQuery.of(context).orientation == Orientation.landscape;
-    final widthFactor = isLandscape ? 0.6 : 0.92;
+    final widthFactor = isLandscape ? 0.8 : 0.92;
     final maxHeight = isLandscape
         ? MediaQuery.of(context).size.height * 0.8
         : MediaQuery.of(context).size.height * 0.95;
@@ -102,88 +102,206 @@ class PokemonModal extends StatelessWidget {
                             ),
                           ),
                           const SizedBox(height: 16),
-                          Center(
-                            child: Image.network(
-                              imagen,
-                              height:
-                                  MediaQuery.of(context).size.height *
-                                  (isLandscape ? 0.13 : 0.16),
-                              fit: BoxFit.contain,
+                          if (!isLandscape) ...[
+                            // DISEÑO VERTICAL (igual que antes)
+                            Center(
+                              child: Image.network(
+                                imagen,
+                                height:
+                                    MediaQuery.of(context).size.height *
+                                    (isLandscape ? 0.13 : 0.16),
+                                fit: BoxFit.contain,
+                              ),
                             ),
-                          ),
-                          Text(
-                            nombre,
-                            style: const TextStyle(
-                              fontFamily: 'CenturyGothic',
-                              fontWeight: FontWeight.bold,
-                              fontSize: 24,
-                              color: Colors.black,
-                            ),
-                            textAlign: TextAlign.center,
-                            maxLines: 2,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                          const SizedBox(height: 8),
-                          Chip(
-                            label: Text(
-                              tipo,
+                            Text(
+                              nombre,
                               style: const TextStyle(
                                 fontFamily: 'CenturyGothic',
                                 fontWeight: FontWeight.bold,
-                                fontSize: 16,
-                                color: Colors.white,
-                              ),
-                            ),
-                            backgroundColor: _tipoColor(tipo),
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 24,
-                              vertical: 6,
-                            ),
-                          ),
-                          const SizedBox(height: 20),
-                          Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 16),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                              children: [
-                                Flexible(
-                                  child: _datoPokemon(
-                                    "${altura ?? "?"} m",
-                                    "Altura",
-                                  ),
-                                ),
-                                Flexible(
-                                  child: _datoPokemon(
-                                    "${peso ?? "?"} kg",
-                                    "Peso",
-                                  ),
-                                ),
-                                Flexible(
-                                  child: _datoPokemon(
-                                    habilidad ?? "?",
-                                    "Habilidad",
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                          const SizedBox(height: 20),
-                          Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 24),
-                            child: Text(
-                              descripcion ?? "",
-                              style: const TextStyle(
-                                fontFamily: 'CenturyGothic',
-                                fontWeight: FontWeight.normal,
-                                fontSize: 14,
-                                color: Colors.black87,
+                                fontSize: 24,
+                                color: Colors.black,
                               ),
                               textAlign: TextAlign.center,
-                              maxLines: 6,
+                              maxLines: 2,
                               overflow: TextOverflow.ellipsis,
                             ),
-                          ),
-                          const SizedBox(height: 16),
+                            const SizedBox(height: 8),
+                            Chip(
+                              label: Text(
+                                tipo,
+                                style: const TextStyle(
+                                  fontFamily: 'CenturyGothic',
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 16,
+                                  color: Colors.white,
+                                ),
+                              ),
+                              backgroundColor: _tipoColor(tipo),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 24,
+                                vertical: 6,
+                              ),
+                            ),
+                            const SizedBox(height: 20),
+                            Padding(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 16,
+                              ),
+                              child: Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceEvenly,
+                                children: [
+                                  Flexible(
+                                    child: _datoPokemon(
+                                      "${altura ?? "?"} m",
+                                      "Altura",
+                                    ),
+                                  ),
+                                  Flexible(
+                                    child: _datoPokemon(
+                                      "${peso ?? "?"} kg",
+                                      "Peso",
+                                    ),
+                                  ),
+                                  Flexible(
+                                    child: _datoPokemon(
+                                      habilidad ?? "?",
+                                      "Habilidad",
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            const SizedBox(height: 20),
+                            Padding(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 24,
+                              ),
+                              child: Text(
+                                descripcion ?? "",
+                                style: const TextStyle(
+                                  fontFamily: 'CenturyGothic',
+                                  fontWeight: FontWeight.normal,
+                                  fontSize: 14,
+                                  color: Colors.black87,
+                                ),
+                                textAlign: TextAlign.center,
+                                maxLines: 6,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                            const SizedBox(height: 16),
+                          ] else ...[
+                            // DISEÑO HORIZONTAL (como la imagen proporcionada)
+                            Padding(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 24,
+                              ),
+                              child: Row(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  // Columna izquierda: imagen, nombre, tipo
+                                  Column(
+                                    children: [
+                                      Image.network(
+                                        imagen,
+                                        height:
+                                            MediaQuery.of(context).size.height *
+                                            0.22,
+                                        fit: BoxFit.contain,
+                                      ),
+                                      const SizedBox(height: 12),
+                                      Text(
+                                        nombre,
+                                        style: const TextStyle(
+                                          fontFamily: 'CenturyGothic',
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 26,
+                                          color: Colors.black,
+                                        ),
+                                        textAlign: TextAlign.center,
+                                        maxLines: 2,
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                      const SizedBox(height: 8),
+                                      Chip(
+                                        label: Text(
+                                          tipo,
+                                          style: const TextStyle(
+                                            fontFamily: 'CenturyGothic',
+                                            fontWeight: FontWeight.bold,
+                                            fontSize: 16,
+                                            color: Colors.white,
+                                          ),
+                                        ),
+                                        backgroundColor: _tipoColor(tipo),
+                                        padding: const EdgeInsets.symmetric(
+                                          horizontal: 24,
+                                          vertical: 6,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  const SizedBox(width: 32),
+                                  // Columna derecha: datos y descripción
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.center,
+                                      children: [
+                                        Row(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.center,
+                                          children: [
+                                            Expanded(
+                                              child: _datoPokemon(
+                                                "${altura ?? "?"} m",
+                                                "Altura",
+                                                center: true,
+                                              ),
+                                            ),
+                                            Expanded(
+                                              child: _datoPokemon(
+                                                "${peso ?? "?"} kg",
+                                                "Peso",
+                                                center: true,
+                                              ),
+                                            ),
+                                            Expanded(
+                                              child: _datoPokemon(
+                                                habilidad ?? "?",
+                                                "Habilidad",
+                                                center: true,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                        const SizedBox(height: 24),
+                                        Padding(
+                                          padding: const EdgeInsets.symmetric(
+                                            horizontal: 8,
+                                          ),
+                                          child: Text(
+                                            descripcion ?? "",
+                                            style: const TextStyle(
+                                              fontFamily: 'CenturyGothic',
+                                              fontWeight: FontWeight.normal,
+                                              fontSize: 16,
+                                              color: Colors.black87,
+                                            ),
+                                            textAlign: TextAlign.center,
+                                            maxLines: 6,
+                                            overflow: TextOverflow.ellipsis,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            const SizedBox(height: 16),
+                          ],
                         ],
                       ),
                     ),
@@ -197,8 +315,11 @@ class PokemonModal extends StatelessWidget {
     );
   }
 
-  Widget _datoPokemon(String valor, String etiqueta) {
+  Widget _datoPokemon(String valor, String etiqueta, {bool center = false}) {
     return Column(
+      crossAxisAlignment: center
+          ? CrossAxisAlignment.center
+          : CrossAxisAlignment.start,
       children: [
         Text(
           valor,
@@ -208,6 +329,7 @@ class PokemonModal extends StatelessWidget {
             fontSize: 20,
             color: Colors.black,
           ),
+          textAlign: center ? TextAlign.center : TextAlign.start,
         ),
         const SizedBox(height: 2),
         Text(
@@ -218,6 +340,7 @@ class PokemonModal extends StatelessWidget {
             fontSize: 13,
             color: Colors.grey,
           ),
+          textAlign: center ? TextAlign.center : TextAlign.start,
         ),
       ],
     );

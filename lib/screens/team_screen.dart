@@ -95,99 +95,115 @@ class _TeamScreenState extends State<TeamScreen> {
       color: Colors.grey,
     );
 
-    // Encabezado con título y botón
-    Map<String, dynamic> header = {
-      "titulo": Text(
-        _nuevoEquipo ? "Crear nuevo equipo" : "Modificar Equipo",
-        style: const TextStyle(
-          fontFamily: 'CenturyGothic',
-          fontWeight: FontWeight.bold,
-          fontSize: 20,
+    Widget titulo = Expanded(
+      child: Padding(
+        padding: const EdgeInsets.only(right: 12),
+        child: Text(
+          _nuevoEquipo ? "Crear nuevo equipo" : "Modificar Equipo",
+          style: const TextStyle(
+            fontFamily: 'CenturyGothic',
+            fontWeight: FontWeight.bold,
+            fontSize: 20,
+          ),
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
         ),
       ),
-      "boton": Builder(
-        builder: (context) {
-          final orientation = MediaQuery.of(context).orientation;
-          final double btnHeight = orientation == Orientation.portrait
-              ? _screen.height * 0.07
-              : 44;
-          final double btnWidth = orientation == Orientation.portrait
-              ? _screen.width * 0.4
-              : 180;
-          return SizedBox(
-            height: btnHeight,
-            width: btnWidth,
-            child: FilledButton(
-              onPressed: () async {
-                try {
-                  _validarFormulario();
-                  _validarLista();
+    );
 
-                  if (_nuevoEquipo) {
-                    // Crear equipo nuevo
-                    final idEquipo = await BaseDatos.instance
-                        .insertar("equipos", {
-                          "nombre": _nombreController.text.trim(),
-                          "creador": _creadorController.text.trim(),
-                          "descripcion": _descripcionController.text.trim(),
-                        });
+    Widget boton = Padding(
+      padding: const EdgeInsets.only(left: 12),
+      child: SizedBox(
+        height: 44,
+        child: FittedBox(
+          fit: BoxFit.scaleDown,
+          child: Builder(
+            builder: (context) {
+              final orientation = MediaQuery.of(context).orientation;
+              final double btnHeight = orientation == Orientation.portrait
+                  ? _screen.height * 0.07
+                  : 44;
+              final double btnWidth = orientation == Orientation.portrait
+                  ? _screen.width * 0.4
+                  : 250;
+              return SizedBox(
+                height: btnHeight,
+                width: btnWidth,
+                child: FilledButton(
+                  onPressed: () async {
+                    try {
+                      _validarFormulario();
+                      _validarLista();
 
-                    // Asignar los Pokémon seleccionados al equipo
-                    for (final idPokemon in _seleccionados) {
-                      await BaseDatos.instance.actualizar(
-                        "pokemones",
-                        {"equipo": idEquipo},
-                        "id = ?",
-                        [idPokemon],
+                      if (_nuevoEquipo) {
+                        // Crear equipo nuevo
+                        final idEquipo = await BaseDatos.instance
+                            .insertar("equipos", {
+                              "nombre": _nombreController.text.trim(),
+                              "creador": _creadorController.text.trim(),
+                              "descripcion": _descripcionController.text.trim(),
+                            });
+
+                        // Asignar los Pokémon seleccionados al equipo
+                        for (final idPokemon in _seleccionados) {
+                          await BaseDatos.instance.actualizar(
+                            "pokemones",
+                            {"equipo": idEquipo},
+                            "id = ?",
+                            [idPokemon],
+                          );
+                        }
+                      } else {
+                        // Editar equipo existente: actualizar pokemones
+                        final idEquipo = widget.equipo!["id"];
+                        // Primero, desasigna todos los pokemones de este equipo
+                        await BaseDatos.instance.actualizar(
+                          "pokemones",
+                          {"equipo": null},
+                          "equipo = ?",
+                          [idEquipo],
+                        );
+                        // Luego, asigna los seleccionados
+                        for (final idPokemon in _seleccionados) {
+                          await BaseDatos.instance.actualizar(
+                            "pokemones",
+                            {"equipo": idEquipo},
+                            "id = ?",
+                            [idPokemon], // Usa el ID real, no el índice ni -1
+                          );
+                        }
+                      }
+
+                      Navigator.pushReplacement(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const HomeScreen(),
+                        ),
                       );
+                    } catch (e) {
+                      desplegarError(e);
                     }
-                  } else {
-                    // Editar equipo existente: actualizar pokemones
-                    final idEquipo = widget.equipo!["id"];
-                    // Primero, desasigna todos los pokemones de este equipo
-                    await BaseDatos.instance.actualizar(
-                      "pokemones",
-                      {"equipo": null},
-                      "equipo = ?",
-                      [idEquipo],
-                    );
-                    // Luego, asigna los seleccionados
-                    for (final idPokemon in _seleccionados) {
-                      await BaseDatos.instance.actualizar(
-                        "pokemones",
-                        {"equipo": idEquipo},
-                        "id = ?",
-                        [idPokemon], // Usa el ID real, no el índice ni -1
-                      );
-                    }
-                  }
-
-                  Navigator.pushReplacement(
-                    context,
-                    MaterialPageRoute(builder: (context) => const HomeScreen()),
-                  );
-                } catch (e) {
-                  desplegarError(e);
-                }
-              },
-              style: FilledButton.styleFrom(
-                minimumSize: Size(btnWidth, btnHeight),
-                padding: const EdgeInsets.symmetric(vertical: 10),
-                textStyle: const TextStyle(fontSize: 18),
-                backgroundColor: Colors.red,
-              ),
-              child: Text(
-                _nuevoEquipo ? "¡Crear!" : "Guardar cambios",
-                style: const TextStyle(
-                  fontFamily: 'CenturyGothic',
-                  fontWeight: FontWeight.bold,
+                  },
+                  style: FilledButton.styleFrom(
+                    minimumSize: Size(btnWidth, btnHeight),
+                    padding: const EdgeInsets.symmetric(vertical: 10),
+                    textStyle: const TextStyle(fontSize: 18),
+                    backgroundColor: Colors.red,
+                  ),
+                  child: Text(
+                    _nuevoEquipo ? "¡Crear!" : "Guardar cambios",
+                    style: const TextStyle(
+                      fontFamily: 'CenturyGothic',
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
                 ),
-              ),
-            ),
-          );
-        },
+              );
+            },
+          ),
+        ),
       ),
-    };
+    );
 
     return OrientationBuilder(
       builder: (BuildContext context, Orientation orientation) {
@@ -210,35 +226,7 @@ class _TeamScreenState extends State<TeamScreen> {
                       botonRegresar,
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Expanded(
-                            child: Padding(
-                              padding: const EdgeInsets.only(right: 12),
-                              child: Text(
-                                _nuevoEquipo
-                                    ? "Crear nuevo equipo"
-                                    : "Modificar Equipo",
-                                style: const TextStyle(
-                                  fontFamily: 'CenturyGothic',
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 20,
-                                ),
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                            ),
-                          ),
-                          Padding(
-                            padding: const EdgeInsets.only(left: 12),
-                            child: SizedBox(
-                              height: 44,
-                              child: FittedBox(
-                                fit: BoxFit.scaleDown,
-                                child: header["boton"],
-                              ),
-                            ),
-                          ),
-                        ],
+                        children: [titulo, boton],
                       ),
                       divisor,
                       formularioEquipo(orientation),
