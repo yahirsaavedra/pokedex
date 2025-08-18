@@ -1,13 +1,40 @@
+/// Este archivo contiene la pantalla principal para gestionar los equipos de Pokémon.
+
 import 'package:flutter/material.dart';
 import 'package:pokedexapp/helpers/database.dart';
 import 'package:pokedexapp/screens/team_view_screen.dart';
 import 'package:pokedexapp/widgets/team_card.dart';
 
+/// Pantalla de Mis equipos
 class MisEquiposScreen extends StatelessWidget {
   const MisEquiposScreen({super.key});
 
   // Mapa para asociar cada creador con un color
   static final Map<String, Color> _creadorColores = {};
+
+  // Genera un color pastel aleatorio pero consistente para cada creador
+  Color _colorParaCreador(String creador) {
+    if (_creadorColores.containsKey(creador)) {
+      return _creadorColores[creador]!;
+    }
+    final hash = creador.hashCode;
+    final r = (hash & 0xFF0000) >> 16;
+    final g = (hash & 0x00FF00) >> 8;
+    final b = (hash & 0x0000FF);
+    // Colores base suaves
+    final baseColor = Color.fromARGB(255, r % 256, g % 256, b % 256);
+    
+    // Mezcla con blanco para obtener un color pastel.
+    int pastelizar(int c) => ((c + 255) ~/ 2);
+    final pastelColor = Color.fromARGB(
+      255,
+      pastelizar((baseColor.r * 255.0).round() & 0xff),
+      pastelizar((baseColor.g * 255.0).round() & 0xff),
+      pastelizar((baseColor.b * 255.0).round() & 0xff),
+    );
+    _creadorColores[creador] = pastelColor;
+    return pastelColor;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -98,7 +125,9 @@ class MisEquiposScreen extends StatelessWidget {
                                   .map((p) => p["id"] as int)
                                   .toList();
 
-                              if (!context.mounted) return;
+                              if (!context.mounted) {
+                                return;
+                              }
 
                               Navigator.push(
                                 context,
@@ -123,28 +152,5 @@ class MisEquiposScreen extends StatelessWidget {
         ),
       ),
     );
-  }
-
-  // Genera un color pastel aleatorio pero consistente para cada creador
-  Color _colorParaCreador(String creador) {
-    if (_creadorColores.containsKey(creador)) {
-      return _creadorColores[creador]!;
-    }
-    final hash = creador.hashCode;
-    final r = (hash & 0xFF0000) >> 16;
-    final g = (hash & 0x00FF00) >> 8;
-    final b = (hash & 0x0000FF);
-    // Colores base suaves
-    final baseColor = Color.fromARGB(255, r % 256, g % 256, b % 256);
-    // Mezcla con blanco para obtener pastel
-    int pastelize(int c) => ((c + 255) ~/ 2);
-    final pastelColor = Color.fromARGB(
-      255,
-      pastelize((baseColor.r * 255.0).round() & 0xff),
-      pastelize((baseColor.g * 255.0).round() & 0xff),
-      pastelize((baseColor.b * 255.0).round() & 0xff),
-    );
-    _creadorColores[creador] = pastelColor;
-    return pastelColor;
   }
 }

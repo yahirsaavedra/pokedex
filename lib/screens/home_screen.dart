@@ -1,159 +1,95 @@
-import 'package:flutter/material.dart';
-import 'package:pokedexapp/screens/pages/pokedex_page.dart';
-import 'package:pokedexapp/screens/pages/team_page.dart';
+/// Este archivo contiene la pantalla principal de la aplicación,
+/// que incluye las pestañas "Mis equipos" y "Pokedex".
 
-// Pantalla principal con tabs ("Mis equipos" y "Pokedex")
+import 'package:flutter/material.dart';
+import 'package:pokedexapp/screens/tabs/pokedex_tab.dart';
+import 'package:pokedexapp/screens/tabs/my_teams_tab.dart';
+
+/// Pantalla principal con tabs ("Mis equipos" y "Pokedex").
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
 
-  // Lista estática de pestañas
+  // Lista estática de pestañas.
   static const List<Tab> tabs = <Tab>[
     Tab(text: 'Mis equipos'),
     Tab(text: 'Pokedex'),
   ];
 
   @override
+  // Implementa el estado de la pantalla principal.
   State<HomeScreen> createState() => _HomeScreenState();
 }
 
+/// Estado de la pantalla principal.
 class _HomeScreenState extends State<HomeScreen> {
   @override
+  /// Implementa el método build para construir la interfaz.
+  ///
+  /// [context] es el contexto de construcción.
   Widget build(BuildContext context) {
-    return TabControllerExample(tabs: HomeScreen.tabs);
+    return ControladorTabs(tabs: HomeScreen.tabs);
   }
 }
 
-// Widget que controla las pestañas usando DefaultTabController
-class TabControllerExample extends StatelessWidget {
-  const TabControllerExample({required this.tabs, super.key});
+/// Widget que controla las pestañas usando DefaultTabController.
+class ControladorTabs extends StatelessWidget {
+  const ControladorTabs({required this.tabs, super.key});
 
-  final List<Tab> tabs; // Pestañas recibidas como parámetro
+  // Lista fija de pestañas.
+  final List<Tab> tabs;
 
+  /// Construye el widget de control de pestañas.
+  ///
+  /// [context] es el contexto de construcción.
   @override
   Widget build(BuildContext context) {
     return DefaultTabController(
-      length: tabs.length, // Número de pestañas
-      child: DefaultTabControllerListener(
-        onTabChanged: (int index) {
-          // Aquí podrías reaccionar cuando se cambia de pestaña
-        },
-        child: SafeArea(
-          // <-- Envuelve el Scaffold con SafeArea
-          child: Scaffold(
-            backgroundColor: Colors.white.withOpacity(
-              0.95,
-            ), // Fondo blanco opaco
-            appBar: AppBar(
-              automaticallyImplyLeading: false, // No mostrar botón de volver
-              backgroundColor: Colors.white.withOpacity(0.95),
-              elevation: 0,
-              bottom: TabBar(
-                tabs: tabs,
-                indicator: UnderlineTabIndicator(
-                  borderSide: BorderSide(
-                    color: Color(0xFFB3E5FC), // Azul claro
-                    width: 8,
-                  ),
+      length: tabs.length, // Número de pestañas.
+      /* Envuelve todo en un SafeArea para evitar conflictos con la barra de menú
+      del sistema operativo en versiones recientes de Android. */
+      child: SafeArea(
+        // Proporciona una base sólida de Material para construir el widget.
+        child: Scaffold(
+          backgroundColor: const Color.fromARGB(242, 255, 255, 255),
+          // Barra superior de la aplicación.
+          appBar: AppBar(
+            automaticallyImplyLeading: false, // No mostrar botón de Volver.
+            backgroundColor: const Color.fromARGB(242, 255, 255, 255),
+            elevation: 0, // Sombreado
+            bottom: TabBar(
+              tabs: tabs,
+              indicator: UnderlineTabIndicator(
+                // Indicador de pestaña.
+                borderSide: BorderSide(
+                  color: Color(0xFFB3E5FC), // Azul claro.
+                  width: 8,
                 ),
-                labelPadding: EdgeInsets.only(
-                  bottom: 12,
-                ), // Espaciado debajo del texto
-                labelStyle: TextStyle(
-                  fontFamily: 'CenturyGothic',
-                  fontWeight: FontWeight.bold,
-                  fontSize: 16,
-                ),
-                unselectedLabelStyle: TextStyle(
-                  fontFamily: 'CenturyGothic',
-                  fontWeight: FontWeight.normal,
-                  fontSize: 16,
-                ),
-                labelColor: Colors.black,
-                unselectedLabelColor: Colors.black,
               ),
+              labelPadding: EdgeInsets.only(
+                bottom: 12,
+              ), // Espaciado debajo del texto.
+              labelStyle: TextStyle(
+                fontFamily: 'CenturyGothic',
+                fontWeight: FontWeight.bold,
+                fontSize: 16,
+              ),
+              unselectedLabelStyle: TextStyle(
+                fontFamily: 'CenturyGothic',
+                fontWeight: FontWeight.normal,
+                fontSize: 16,
+              ),
+              labelColor: Colors.black, // Color del tab seleccionado.
+              unselectedLabelColor:
+                  Colors.black, // Color del tab no seleccionado.
             ),
+          ),
 
-            body: TabBarView(
-              children: const [
-                MisEquiposScreen(), // Archivo nuevo 1
-                PokedexScreen(), // Archivo nuevo 2
-              ],
-            ),
+          body: TabBarView(
+            // Contenedor de las vistas de las pestañas.
+            children: const [MisEquiposScreen(), PokedexScreen()],
           ),
         ),
       ),
     );
-  }
-}
-
-// Este widget escucha cambios en el tab activo
-class DefaultTabControllerListener extends StatefulWidget {
-  const DefaultTabControllerListener({
-    required this.onTabChanged, // Función que se ejecuta al cambiar de tab
-    required this.child,
-    super.key,
-  });
-
-  final ValueChanged<int> onTabChanged;
-  final Widget child;
-
-  @override
-  State<DefaultTabControllerListener> createState() =>
-      _DefaultTabControllerListenerState();
-}
-
-class _DefaultTabControllerListenerState
-    extends State<DefaultTabControllerListener> {
-  TabController? _controller;
-
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-
-    // Obtiene el controlador de pestañas
-    final TabController? defaultTabController = DefaultTabController.maybeOf(
-      context,
-    );
-
-    // Si no hay DefaultTabController, lanza un error
-    assert(() {
-      if (defaultTabController == null) {
-        throw FlutterError(
-          'No DefaultTabController para ${widget.runtimeType}.\n'
-          'Debes envolver este widget en un DefaultTabController.',
-        );
-      }
-      return true;
-    }());
-
-    // Si el controlador cambia, actualizamos el listener
-    if (defaultTabController != _controller) {
-      _controller?.removeListener(_listener);
-      _controller = defaultTabController;
-      _controller?.addListener(_listener);
-    }
-  }
-
-  // Listener que se ejecuta cuando cambia de pestaña
-  void _listener() {
-    final TabController? controller = _controller;
-
-    // Si el cambio de tab aún está en transición, no hacer nada
-    if (controller == null || controller.indexIsChanging) {
-      return;
-    }
-
-    widget.onTabChanged(controller.index); // Ejecuta callback
-  }
-
-  @override
-  void dispose() {
-    _controller?.removeListener(_listener);
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return widget.child; // Devuelve el widget hijo
   }
 }

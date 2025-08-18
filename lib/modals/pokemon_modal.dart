@@ -47,264 +47,336 @@ class PokemonModal extends StatelessWidget {
                       borderRadius: BorderRadius.circular(28),
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.black.withOpacity(0.12),
+                          color: Color.fromARGB(31, 0, 0, 0), // 0.12 * 255 ≈ 31
                           blurRadius: 24,
                           offset: const Offset(0, 8),
                         ),
                       ],
                     ),
                     padding: const EdgeInsets.only(bottom: 16),
-                    child: SingleChildScrollView(
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          // Encabezado rojo con botón de cerrar
-                          Container(
-                            width: double.infinity,
-                            padding: const EdgeInsets.symmetric(
-                              vertical: 20,
-                              horizontal: 24,
-                            ),
-                            decoration: const BoxDecoration(
-                              color: Color(0xFFF26D6D),
-                              borderRadius: BorderRadius.only(
-                                topLeft: Radius.circular(28),
-                                topRight: Radius.circular(28),
-                              ),
-                            ),
-                            child: Stack(
-                              children: [
-                                Center(
-                                  child: Text(
-                                    "Información",
-                                    style: const TextStyle(
-                                      fontFamily: 'CenturyGothic',
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 22,
-                                      color: Colors.white,
-                                    ),
+                    child: isLandscape
+                        ? Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              // Encabezado fijo solo en horizontal
+                              Container(
+                                width: double.infinity,
+                                padding: const EdgeInsets.symmetric(
+                                  vertical: 20,
+                                  horizontal: 24,
+                                ),
+                                decoration: const BoxDecoration(
+                                  color: Color(0xFFF26D6D),
+                                  borderRadius: BorderRadius.only(
+                                    topLeft: Radius.circular(28),
+                                    topRight: Radius.circular(28),
                                   ),
                                 ),
-                                Positioned(
-                                  right: 0,
-                                  top: 0,
-                                  child: IconButton(
-                                    icon: const Icon(
-                                      Icons.close,
-                                      color: Colors.white,
-                                      size: 28,
-                                    ),
-                                    onPressed: () =>
-                                        Navigator.of(context).pop(),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                          const SizedBox(height: 16),
-                          if (!isLandscape) ...[
-                            // DISEÑO VERTICAL (igual que antes)
-                            Center(
-                              child: Image.network(
-                                imagen,
-                                height:
-                                    MediaQuery.of(context).size.height *
-                                    (isLandscape ? 0.13 : 0.16),
-                                fit: BoxFit.contain,
-                              ),
-                            ),
-                            Text(
-                              nombre,
-                              style: const TextStyle(
-                                fontFamily: 'CenturyGothic',
-                                fontWeight: FontWeight.bold,
-                                fontSize: 24,
-                                color: Colors.black,
-                              ),
-                              textAlign: TextAlign.center,
-                              maxLines: 2,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                            const SizedBox(height: 8),
-                            Chip(
-                              label: Text(
-                                tipo,
-                                style: const TextStyle(
-                                  fontFamily: 'CenturyGothic',
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 16,
-                                  color: Colors.white,
-                                ),
-                              ),
-                              backgroundColor: _tipoColor(tipo),
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 24,
-                                vertical: 6,
-                              ),
-                            ),
-                            const SizedBox(height: 20),
-                            Padding(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 16,
-                              ),
-                              child: Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceEvenly,
-                                children: [
-                                  Flexible(
-                                    child: _datoPokemon(
-                                      "${altura ?? "?"} m",
-                                      "Altura",
-                                    ),
-                                  ),
-                                  Flexible(
-                                    child: _datoPokemon(
-                                      "${peso ?? "?"} kg",
-                                      "Peso",
-                                    ),
-                                  ),
-                                  Flexible(
-                                    child: _datoPokemon(
-                                      habilidad ?? "?",
-                                      "Habilidad",
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                            const SizedBox(height: 20),
-                            Padding(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 24,
-                              ),
-                              child: Text(
-                                descripcion ?? "",
-                                style: const TextStyle(
-                                  fontFamily: 'CenturyGothic',
-                                  fontWeight: FontWeight.normal,
-                                  fontSize: 14,
-                                  color: Colors.black87,
-                                ),
-                                textAlign: TextAlign.center,
-                                maxLines: 6,
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                            ),
-                            const SizedBox(height: 16),
-                          ] else ...[
-                            // DISEÑO HORIZONTAL (como la imagen proporcionada)
-                            Padding(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 24,
-                              ),
-                              child: Row(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  // Columna izquierda: imagen, nombre, tipo
-                                  Column(
-                                    children: [
-                                      Image.network(
-                                        imagen,
-                                        height:
-                                            MediaQuery.of(context).size.height *
-                                            0.22,
-                                        fit: BoxFit.contain,
-                                      ),
-                                      const SizedBox(height: 12),
-                                      Text(
-                                        nombre,
+                                child: Stack(
+                                  children: [
+                                    Center(
+                                      child: Text(
+                                        "Información",
                                         style: const TextStyle(
                                           fontFamily: 'CenturyGothic',
                                           fontWeight: FontWeight.bold,
-                                          fontSize: 26,
-                                          color: Colors.black,
+                                          fontSize: 22,
+                                          color: Colors.white,
                                         ),
-                                        textAlign: TextAlign.center,
-                                        maxLines: 2,
-                                        overflow: TextOverflow.ellipsis,
                                       ),
-                                      const SizedBox(height: 8),
-                                      Chip(
-                                        label: Text(
-                                          tipo,
-                                          style: const TextStyle(
-                                            fontFamily: 'CenturyGothic',
-                                            fontWeight: FontWeight.bold,
-                                            fontSize: 16,
-                                            color: Colors.white,
-                                          ),
+                                    ),
+                                    Positioned(
+                                      right: 0,
+                                      top: 0,
+                                      child: IconButton(
+                                        icon: const Icon(
+                                          Icons.close,
+                                          color: Colors.white,
+                                          size: 28,
                                         ),
-                                        backgroundColor: _tipoColor(tipo),
+                                        onPressed: () =>
+                                            Navigator.of(context).pop(),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              // El contenido scrollable
+                              Expanded(
+                                child: SingleChildScrollView(
+                                  child: Column(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      const SizedBox(height: 16),
+                                      // DISEÑO HORIZONTAL (como la imagen proporcionada)
+                                      Padding(
                                         padding: const EdgeInsets.symmetric(
                                           horizontal: 24,
-                                          vertical: 6,
                                         ),
-                                      ),
-                                    ],
-                                  ),
-                                  const SizedBox(width: 32),
-                                  // Columna derecha: datos y descripción
-                                  Expanded(
-                                    child: Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.center,
-                                      children: [
-                                        Row(
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.center,
+                                        child: Row(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
                                           children: [
-                                            Expanded(
-                                              child: _datoPokemon(
-                                                "${altura ?? "?"} m",
-                                                "Altura",
-                                                center: true,
-                                              ),
+                                            // Columna izquierda: imagen, nombre, tipo
+                                            Column(
+                                              children: [
+                                                Image.network(
+                                                  imagen,
+                                                  height:
+                                                      MediaQuery.of(
+                                                        context,
+                                                      ).size.height *
+                                                      0.22,
+                                                  fit: BoxFit.contain,
+                                                ),
+                                                const SizedBox(height: 12),
+                                                Text(
+                                                  nombre,
+                                                  style: const TextStyle(
+                                                    fontFamily: 'CenturyGothic',
+                                                    fontWeight: FontWeight.bold,
+                                                    fontSize: 20,
+                                                    color: Colors.black,
+                                                  ),
+                                                  textAlign: TextAlign.center,
+                                                  maxLines: 2,
+                                                  overflow:
+                                                      TextOverflow.ellipsis,
+                                                ),
+                                                const SizedBox(height: 8),
+                                                Chip(
+                                                  label: Text(
+                                                    tipo,
+                                                    style: const TextStyle(
+                                                      fontFamily:
+                                                          'CenturyGothic',
+                                                      fontWeight:
+                                                          FontWeight.bold,
+                                                      fontSize: 16,
+                                                      color: Colors.white,
+                                                    ),
+                                                  ),
+                                                  backgroundColor: _tipoColor(
+                                                    tipo,
+                                                  ),
+                                                  padding:
+                                                      const EdgeInsets.symmetric(
+                                                        horizontal: 24,
+                                                        vertical: 6,
+                                                      ),
+                                                ),
+                                              ],
                                             ),
+                                            const SizedBox(width: 32),
+                                            // Columna derecha: datos y descripción
                                             Expanded(
-                                              child: _datoPokemon(
-                                                "${peso ?? "?"} kg",
-                                                "Peso",
-                                                center: true,
-                                              ),
-                                            ),
-                                            Expanded(
-                                              child: _datoPokemon(
-                                                habilidad ?? "?",
-                                                "Habilidad",
-                                                center: true,
+                                              child: Column(
+                                                crossAxisAlignment:
+                                                    CrossAxisAlignment.center,
+                                                children: [
+                                                  Row(
+                                                    mainAxisAlignment:
+                                                        MainAxisAlignment
+                                                            .center,
+                                                    children: [
+                                                      Expanded(
+                                                        child: _datoPokemon(
+                                                          "${altura ?? "?"} m",
+                                                          "Altura",
+                                                          center: true,
+                                                        ),
+                                                      ),
+                                                      Expanded(
+                                                        child: _datoPokemon(
+                                                          "${peso ?? "?"} kg",
+                                                          "Peso",
+                                                          center: true,
+                                                        ),
+                                                      ),
+                                                      Expanded(
+                                                        child: _datoPokemon(
+                                                          habilidad ?? "?",
+                                                          "Habilidad",
+                                                          center: true,
+                                                        ),
+                                                      ),
+                                                    ],
+                                                  ),
+                                                  const SizedBox(height: 18),
+                                                  Padding(
+                                                    padding:
+                                                        const EdgeInsets.symmetric(
+                                                          horizontal: 8,
+                                                        ),
+                                                    child: Text(
+                                                      descripcion ?? "",
+                                                      style: const TextStyle(
+                                                        fontFamily:
+                                                            'CenturyGothic',
+                                                        fontWeight:
+                                                            FontWeight.normal,
+                                                        fontSize: 16,
+                                                        color: Colors.black87,
+                                                      ),
+                                                      textAlign:
+                                                          TextAlign.center,
+                                                      maxLines: 6,
+                                                      overflow:
+                                                          TextOverflow.ellipsis,
+                                                    ),
+                                                  ),
+                                                ],
                                               ),
                                             ),
                                           ],
                                         ),
-                                        const SizedBox(height: 24),
-                                        Padding(
-                                          padding: const EdgeInsets.symmetric(
-                                            horizontal: 8,
-                                          ),
-                                          child: Text(
-                                            descripcion ?? "",
-                                            style: const TextStyle(
-                                              fontFamily: 'CenturyGothic',
-                                              fontWeight: FontWeight.normal,
-                                              fontSize: 16,
-                                              color: Colors.black87,
-                                            ),
-                                            textAlign: TextAlign.center,
-                                            maxLines: 6,
-                                            overflow: TextOverflow.ellipsis,
-                                          ),
-                                        ),
-                                      ],
+                                      ),
+                                      const SizedBox(height: 16),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            ],
+                          )
+                        : SingleChildScrollView(
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                // Encabezado scrollable en vertical
+                                Container(
+                                  width: double.infinity,
+                                  padding: const EdgeInsets.symmetric(
+                                    vertical: 20,
+                                    horizontal: 24,
+                                  ),
+                                  decoration: const BoxDecoration(
+                                    color: Color(0xFFF26D6D),
+                                    borderRadius: BorderRadius.only(
+                                      topLeft: Radius.circular(28),
+                                      topRight: Radius.circular(28),
                                     ),
                                   ),
-                                ],
-                              ),
+                                  child: Stack(
+                                    children: [
+                                      Center(
+                                        child: Text(
+                                          "Información",
+                                          style: const TextStyle(
+                                            fontFamily: 'CenturyGothic',
+                                            fontWeight: FontWeight.bold,
+                                            fontSize: 22,
+                                            color: Colors.white,
+                                          ),
+                                        ),
+                                      ),
+                                      Positioned(
+                                        right: 0,
+                                        top: 0,
+                                        child: IconButton(
+                                          icon: const Icon(
+                                            Icons.close,
+                                            color: Colors.white,
+                                            size: 28,
+                                          ),
+                                          onPressed: () =>
+                                              Navigator.of(context).pop(),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                const SizedBox(height: 16),
+                                // DISEÑO VERTICAL (igual que antes)
+                                Center(
+                                  child: Image.network(
+                                    imagen,
+                                    height:
+                                        MediaQuery.of(context).size.height *
+                                        0.16,
+                                    fit: BoxFit.contain,
+                                  ),
+                                ),
+                                Text(
+                                  nombre,
+                                  style: const TextStyle(
+                                    fontFamily: 'CenturyGothic',
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 18,
+                                    color: Colors.black,
+                                  ),
+                                  textAlign: TextAlign.center,
+                                  maxLines: 2,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                                const SizedBox(height: 8),
+                                Chip(
+                                  label: Text(
+                                    tipo,
+                                    style: const TextStyle(
+                                      fontFamily: 'CenturyGothic',
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 16,
+                                      color: Colors.white,
+                                    ),
+                                  ),
+                                  backgroundColor: _tipoColor(tipo),
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 24,
+                                    vertical: 6,
+                                  ),
+                                ),
+                                const SizedBox(height: 20),
+                                Padding(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 16,
+                                  ),
+                                  child: Row(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceEvenly,
+                                    children: [
+                                      Flexible(
+                                        child: _datoPokemon(
+                                          "${altura ?? "?"} m",
+                                          "Altura",
+                                        ),
+                                      ),
+                                      Flexible(
+                                        child: _datoPokemon(
+                                          "${peso ?? "?"} kg",
+                                          "Peso",
+                                        ),
+                                      ),
+                                      Flexible(
+                                        child: _datoPokemon(
+                                          habilidad ?? "?",
+                                          "Habilidad",
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                const SizedBox(height: 20),
+                                Padding(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 24,
+                                  ),
+                                  child: Text(
+                                    descripcion ?? "",
+                                    style: const TextStyle(
+                                      fontFamily: 'CenturyGothic',
+                                      fontWeight: FontWeight.normal,
+                                      fontSize: 14,
+                                      color: Colors.black87,
+                                    ),
+                                    textAlign: TextAlign.center,
+                                    maxLines: 6,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ),
+                                const SizedBox(height: 16),
+                              ],
                             ),
-                            const SizedBox(height: 16),
-                          ],
-                        ],
-                      ),
-                    ),
+                          ),
                   ),
                 );
               },

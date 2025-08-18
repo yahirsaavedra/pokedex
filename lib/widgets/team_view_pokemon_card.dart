@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-// Widget para mostrar la carta de un Pokémon
+// Widget para mostrar la carta de un Pokémon en el equipo
 class PokemonCard extends StatelessWidget {
   final String nombre;
   final String imagen;
@@ -9,6 +9,14 @@ class PokemonCard extends StatelessWidget {
   final Widget? extra;
   final Color? chipColor;
 
+  /// Constructor de la carta de Pokémon.
+  ///
+  /// [nombre] es el nombre del Pokémon.
+  /// [imagen] es la URL de la imagen.
+  /// [tipo] es el tipo del Pokémon.
+  /// [isSelected] indica si está seleccionado.
+  /// [extra] es un widget adicional (botón de añadir/eliminar).
+  /// [chipColor] es el color del chip de tipo.
   const PokemonCard({
     super.key,
     required this.nombre,
@@ -21,14 +29,15 @@ class PokemonCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Usa LayoutBuilder para adaptar el diseño al espacio disponible.
     return LayoutBuilder(
       builder: (context, constraints) {
         return Stack(
           children: [
             SizedBox(
-              width: double.infinity, // Ocupa todo el ancho disponible del grid
+              width: double.infinity,
               child: Card(
-                elevation: isSelected ? 6 : 2,
+                elevation: isSelected ? 6 : 2, // Resalta si está seleccionado.
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(18),
                 ),
@@ -38,10 +47,12 @@ class PokemonCard extends StatelessWidget {
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
+                      // Imagen del Pokémon
                       Expanded(
                         child: Image.network(imagen, fit: BoxFit.contain),
                       ),
                       const SizedBox(height: 8),
+                      // Nombre del Pokémon
                       Text(
                         nombre,
                         style: const TextStyle(
@@ -55,6 +66,7 @@ class PokemonCard extends StatelessWidget {
                         textAlign: TextAlign.center,
                       ),
                       const SizedBox(height: 8),
+                      // Chip con el tipo del Pokémon
                       Chip(
                         label: Text(
                           tipo,
@@ -71,12 +83,14 @@ class PokemonCard extends StatelessWidget {
                           vertical: 0,
                         ),
                       ),
+                      // Widget extra (botón de añadir/eliminar)
                       if (extra != null) ...[const SizedBox(height: 8), extra!],
                     ],
                   ),
                 ),
               ),
             ),
+            // Icono de selección si el Pokémon está seleccionado
             if (isSelected)
               Positioned(
                 top: 8,
@@ -87,7 +101,7 @@ class PokemonCard extends StatelessWidget {
                     shape: BoxShape.circle,
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withOpacity(0.10),
+                        color: Color.fromARGB(26, 0, 0, 0), // Sombra suave
                         blurRadius: 4,
                       ),
                     ],
