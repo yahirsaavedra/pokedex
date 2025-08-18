@@ -28,6 +28,6 @@ flutter:
     - family: CenturyGothic
       fonts:
         - asset: assets/CenturyGothic.ttf
-    - family: CenturyGothicBold
-      fonts:
+          weight: 400
         - asset: assets/CenturyGothicBold.ttf
+          weight: 700

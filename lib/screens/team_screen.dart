@@ -75,7 +75,15 @@ class _TeamScreenState extends State<TeamScreen> {
           );
         },
         icon: const Icon(Icons.keyboard_arrow_left),
-        label: const Text("Regresar"),
+        label: const Text(
+          "Regresar",
+          style: TextStyle(
+            color: Colors.black,
+            fontFamily: 'CenturyGothic',
+            fontWeight: FontWeight.bold,
+            fontSize: 16,
+          ),
+        ),
       ),
     );
 
@@ -91,68 +99,93 @@ class _TeamScreenState extends State<TeamScreen> {
     Map<String, dynamic> header = {
       "titulo": Text(
         _nuevoEquipo ? "Crear nuevo equipo" : "Modificar Equipo",
-        style: const TextStyle(fontSize: 25),
-      ),
-      "boton": FilledButton(
-        onPressed: () async {
-          try {
-            _validarFormulario();
-            _validarLista();
-
-            if (_nuevoEquipo) {
-              // Crear equipo nuevo
-              final idEquipo = await BaseDatos.instance.insert("equipos", {
-                "nombre": _nombreController.text.trim(),
-                "creador": _creadorController.text.trim(),
-                "descripcion": _descripcionController.text.trim(),
-              });
-
-              // Asignar los Pokémon seleccionados al equipo
-              for (final idPokemon in _seleccionados) {
-                await BaseDatos.instance.update(
-                  "pokemones",
-                  {"equipo": idEquipo},
-                  "id = ?",
-                  [idPokemon],
-                );
-              }
-            } else {
-              // Editar equipo existente: actualizar pokemones
-              final idEquipo = widget.equipo!["id"];
-              // Primero, desasigna todos los pokemones de este equipo
-              await BaseDatos.instance.update(
-                "pokemones",
-                {"equipo": null},
-                "equipo = ?",
-                [idEquipo],
-              );
-              // Luego, asigna los seleccionados
-              for (final idPokemon in _seleccionados) {
-                await BaseDatos.instance.update(
-                  "pokemones",
-                  {"equipo": idEquipo},
-                  "id = ?",
-                  [idPokemon], // Usa el ID real, no el índice ni -1
-                );
-              }
-            }
-
-            Navigator.pushReplacement(
-              context,
-              MaterialPageRoute(builder: (context) => const HomeScreen()),
-            );
-          } catch (e) {
-            desplegarError(e);
-          }
-        },
-
-        style: FilledButton.styleFrom(
-          minimumSize: Size(_screen.width * 0.2, _screen.height * 0.07),
-          padding: const EdgeInsets.symmetric(vertical: 10),
-          textStyle: const TextStyle(fontSize: 18),
-          backgroundColor: Colors.red,
+        style: const TextStyle(
+          fontFamily: 'CenturyGothic',
+          fontWeight: FontWeight.bold,
+          fontSize: 20,
         ),
-        child: Text(_nuevoEquipo ? "¡Crear!" : "Guardar cambios"),
+      ),
+      "boton": Builder(
+        builder: (context) {
+          final orientation = MediaQuery.of(context).orientation;
+          final double btnHeight = orientation == Orientation.portrait
+              ? _screen.height * 0.07
+              : 44;
+          final double btnWidth = orientation == Orientation.portrait
+              ? _screen.width * 0.4
+              : 180;
+          return SizedBox(
+            height: btnHeight,
+            width: btnWidth,
+            child: FilledButton(
+              onPressed: () async {
+                try {
+                  _validarFormulario();
+                  _validarLista();
+
+                  if (_nuevoEquipo) {
+                    // Crear equipo nuevo
+                    final idEquipo = await BaseDatos.instance
+                        .insertar("equipos", {
+                          "nombre": _nombreController.text.trim(),
+                          "creador": _creadorController.text.trim(),
+                          "descripcion": _descripcionController.text.trim(),
+                        });
+
+                    // Asignar los Pokémon seleccionados al equipo
+                    for (final idPokemon in _seleccionados) {
+                      await BaseDatos.instance.actualizar(
+                        "pokemones",
+                        {"equipo": idEquipo},
+                        "id = ?",
+                        [idPokemon],
+                      );
+                    }
+                  } else {
+                    // Editar equipo existente: actualizar pokemones
+                    final idEquipo = widget.equipo!["id"];
+                    // Primero, desasigna todos los pokemones de este equipo
+                    await BaseDatos.instance.actualizar(
+                      "pokemones",
+                      {"equipo": null},
+                      "equipo = ?",
+                      [idEquipo],
+                    );
+                    // Luego, asigna los seleccionados
+                    for (final idPokemon in _seleccionados) {
+                      await BaseDatos.instance.actualizar(
+                        "pokemones",
+                        {"equipo": idEquipo},
+                        "id = ?",
+                        [idPokemon], // Usa el ID real, no el índice ni -1
+                      );
+                    }
+                  }
+
+                  Navigator.pushReplacement(
+                    context,
+                    MaterialPageRoute(builder: (context) => const HomeScreen()),
+                  );
+                } catch (e) {
+                  desplegarError(e);
+                }
+              },
+              style: FilledButton.styleFrom(
+                minimumSize: Size(btnWidth, btnHeight),
+                padding: const EdgeInsets.symmetric(vertical: 10),
+                textStyle: const TextStyle(fontSize: 18),
+                backgroundColor: Colors.red,
+              ),
+              child: Text(
+                _nuevoEquipo ? "¡Crear!" : "Guardar cambios",
+                style: const TextStyle(
+                  fontFamily: 'CenturyGothic',
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+          );
+        },
       ),
     };
 
@@ -177,7 +210,35 @@ class _TeamScreenState extends State<TeamScreen> {
                       botonRegresar,
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [header["titulo"], header["boton"]],
+                        children: [
+                          Expanded(
+                            child: Padding(
+                              padding: const EdgeInsets.only(right: 12),
+                              child: Text(
+                                _nuevoEquipo
+                                    ? "Crear nuevo equipo"
+                                    : "Modificar Equipo",
+                                style: const TextStyle(
+                                  fontFamily: 'CenturyGothic',
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 20,
+                                ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                          ),
+                          Padding(
+                            padding: const EdgeInsets.only(left: 12),
+                            child: SizedBox(
+                              height: 44,
+                              child: FittedBox(
+                                fit: BoxFit.scaleDown,
+                                child: header["boton"],
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
                       divisor,
                       formularioEquipo(orientation),
@@ -186,7 +247,84 @@ class _TeamScreenState extends State<TeamScreen> {
                         height: orientation == Orientation.portrait
                             ? MediaQuery.of(context).size.height * 0.45
                             : MediaQuery.of(context).size.height * 0.55,
-                        child: listaPokemones(),
+                        child: FutureBuilder<List>(
+                          future: BaseDatos.instance.buscarTodo("pokemones"),
+                          builder: (context, snapshot) {
+                            if (snapshot.connectionState ==
+                                ConnectionState.waiting) {
+                              return const Center(
+                                child: CircularProgressIndicator(),
+                              );
+                            }
+                            if (snapshot.hasError) {
+                              return Center(
+                                child: Text("Error: ${snapshot.error}"),
+                              );
+                            }
+                            final data = snapshot.data!;
+                            return GridView.builder(
+                              padding: const EdgeInsets.only(top: 8),
+                              gridDelegate:
+                                  SliverGridDelegateWithFixedCrossAxisCount(
+                                    crossAxisCount:
+                                        orientation == Orientation.portrait
+                                        ? 2
+                                        : 4,
+                                    mainAxisSpacing: 24,
+                                    crossAxisSpacing: 24,
+                                    childAspectRatio:
+                                        orientation == Orientation.portrait
+                                        ? 0.6
+                                        : 0.5,
+                                  ),
+                              itemCount: data.length,
+                              itemBuilder: (context, index) {
+                                final pokemon =
+                                    data[index] as Map<String, dynamic>;
+                                final nombre = pokemon["nombre"];
+                                final imagen = pokemon["imagen"];
+                                final tipo = pokemon["tipo"];
+                                final idPokemon = pokemon["id"];
+                                final isSelected = _seleccionados.contains(
+                                  idPokemon,
+                                );
+
+                                return PokemonCard(
+                                  nombre: nombre,
+                                  imagen: imagen,
+                                  tipo: tipo,
+                                  isSelected: isSelected,
+                                  chipColor: _tipoColor(
+                                    tipo,
+                                  ), // Pasa el color al widget
+                                  extra: TextButton(
+                                    onPressed: () {
+                                      setState(() {
+                                        if (isSelected) {
+                                          _seleccionados.remove(idPokemon);
+                                        } else {
+                                          if (_seleccionados.length < 10) {
+                                            _seleccionados.add(idPokemon);
+                                          }
+                                        }
+                                      });
+                                    },
+                                    child: Text(
+                                      isSelected ? "Eliminar" : "Añadir",
+                                      style: TextStyle(
+                                        fontFamily: 'CenturyGothic',
+                                        fontWeight: FontWeight.bold,
+                                        color: isSelected
+                                            ? Colors.red
+                                            : Color(0xFF7AC74C),
+                                      ),
+                                    ),
+                                  ),
+                                );
+                              },
+                            );
+                          },
+                        ),
                       ),
                     ],
                   ),
@@ -276,7 +414,7 @@ class _TeamScreenState extends State<TeamScreen> {
 
   Widget listaPokemones() {
     return FutureBuilder<List>(
-      future: BaseDatos.instance.queryAll("pokemones"),
+      future: BaseDatos.instance.buscarTodo("pokemones"),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return const Center(child: CircularProgressIndicator());
@@ -317,6 +455,25 @@ class _TeamScreenState extends State<TeamScreen> {
         backgroundColor: Colors.red,
       ),
     );
+  }
+
+  Color _tipoColor(String tipo) {
+    switch (tipo.toLowerCase()) {
+      case 'planta':
+        return const Color(0xFF7AC74C);
+      case 'agua':
+        return const Color(0xFF6390F0);
+      case 'fuego':
+        return const Color(0xFFEE8130);
+      case 'trueno':
+        return const Color(0xFFF7D02C);
+      case 'tierra':
+        return const Color(0xFFE2BF65);
+      case 'normal':
+        return const Color(0xFFA8A77A);
+      default:
+        return Colors.grey;
+    }
   }
 }
 

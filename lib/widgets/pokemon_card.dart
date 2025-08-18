@@ -1,48 +1,67 @@
 import 'package:flutter/material.dart';
-import 'dart:math' as math;
 
+// Widget para mostrar la carta de un Pokémon
 class PokemonCard extends StatelessWidget {
   final String nombre;
   final String imagen;
   final String tipo;
   final bool isSelected;
-  final VoidCallback? onTap;
-  final Widget? extra; // Para añadir widgets extra como botones
+  final Widget? extra;
+  final Color? chipColor; // <-- Nuevo parámetro
 
   const PokemonCard({
     super.key,
     required this.nombre,
     required this.imagen,
     required this.tipo,
-    this.isSelected = false,
-    this.onTap,
+    required this.isSelected,
     this.extra,
+    this.chipColor, // <-- Nuevo parámetro
   });
 
   @override
   Widget build(BuildContext context) {
     return Card(
-      elevation: 1,
-      color: isSelected ? Colors.lightGreen.shade200 : Colors.white,
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Image(image: NetworkImage(imagen)),
-          Text(nombre, style: const TextStyle(fontSize: 16)),
-          Chip(
-            label: Text(tipo),
-            backgroundColor: Color(
-              (math.Random().nextDouble() * 0xFFFFFF).toInt(),
-            ).withAlpha(255),
-          ),
-          const Divider(
-            height: 30,
-            thickness: 0.5,
-            indent: 20,
-            color: Colors.grey,
-          ),
-          if (extra != null) extra!,
-        ],
+      elevation: isSelected ? 6 : 2,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
+      color: Colors.white,
+      child: Padding(
+        padding: const EdgeInsets.all(12),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Expanded(child: Image.network(imagen, fit: BoxFit.contain)),
+            const SizedBox(height: 8),
+            Text(
+              nombre,
+              style: const TextStyle(
+                fontFamily: 'CenturyGothic',
+                fontWeight: FontWeight.bold,
+                fontSize: 15,
+                color: Colors.black,
+              ),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 8),
+            Chip(
+              label: Text(
+                tipo,
+                style: const TextStyle(
+                  fontFamily: 'CenturyGothic',
+                  fontWeight: FontWeight.bold,
+                  fontSize: 13,
+                  color: Colors.white,
+                ),
+              ),
+              backgroundColor:
+                  chipColor ?? Colors.grey, // <-- Usa el color recibido
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 0),
+            ),
+            if (extra != null) ...[const SizedBox(height: 8), extra!],
+          ],
+        ),
       ),
     );
   }

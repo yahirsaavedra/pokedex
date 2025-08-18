@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:pokedexapp/helpers/database.dart';
 import 'package:pokedexapp/screens/team_screen.dart';
-import 'dart:math' as math;
 
 class MisEquiposScreen extends StatelessWidget {
   const MisEquiposScreen({super.key});
@@ -16,36 +15,40 @@ class MisEquiposScreen extends StatelessWidget {
             Row(
               children: [
                 const Spacer(),
-                FilledButton(
-                  onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => const TeamScreen(),
+                SizedBox(
+                  width: 230, // Un poco más ancho para el texto
+                  height: 50,
+                  child: FilledButton(
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const TeamScreen(),
+                        ),
+                      );
+                    },
+                    style: FilledButton.styleFrom(
+                      backgroundColor: Colors.red,
+                      shape: const StadiumBorder(),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 32,
+                        vertical: 12,
                       ),
-                    );
-                  },
-                  style: FilledButton.styleFrom(
-                    backgroundColor: Colors.red,
-                    shape: const StadiumBorder(),
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 32,
-                      vertical: 12,
+                      textStyle: const TextStyle(
+                        fontFamily: 'CenturyGothic',
+                        fontWeight: FontWeight.bold,
+                        fontSize: 14,
+                      ),
                     ),
-                    textStyle: const TextStyle(
-                      fontFamily: 'CenturyGothic',
-                      fontWeight: FontWeight.bold,
-                      fontSize: 18,
-                    ),
+                    child: const Text("Crear nuevo equipo"),
                   ),
-                  child: const Text("Crear nuevo equipo"),
                 ),
               ],
             ),
             const SizedBox(height: 24),
             Expanded(
               child: FutureBuilder<List>(
-                future: BaseDatos.instance.queryAll("equipos"),
+                future: BaseDatos.instance.buscarTodo("equipos"),
                 builder: (context, snapshot) {
                   if (snapshot.connectionState == ConnectionState.waiting) {
                     return const Center(child: CircularProgressIndicator());
@@ -63,8 +66,8 @@ class MisEquiposScreen extends StatelessWidget {
                           ? 2
                           : 3;
                       final aspectRatio = orientation == Orientation.portrait
-                          ? 1.05
-                          : 1.35;
+                          ? 0.75
+                          : 1.0; // Más largo
                       return GridView.builder(
                         gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                           crossAxisCount: crossAxisCount,
@@ -80,21 +83,10 @@ class MisEquiposScreen extends StatelessWidget {
                           final creador = equipo["creador"] ?? "";
                           final id = equipo["id"];
 
-                          // Acortar descripción si supera 3 párrafos
-                          final descripcionParrafos = descripcion.split('\n');
-                          String descripcionFinal;
-                          if (descripcionParrafos.length > 3) {
-                            descripcionFinal =
-                                descripcionParrafos.sublist(0, 3).join('\n') +
-                                '...';
-                          } else {
-                            descripcionFinal = descripcion;
-                          }
-
                           return GestureDetector(
                             onTap: () async {
                               final pokemonesEquipo = await BaseDatos.instance
-                                  .queryAll("pokemones");
+                                  .buscarTodo("pokemones");
                               final seleccionados = pokemonesEquipo
                                   .where((p) => p["equipo"] == id)
                                   .map((p) => p["id"] as int)
@@ -118,69 +110,104 @@ class MisEquiposScreen extends StatelessWidget {
                               ),
                               color: Colors.white,
                               child: Padding(
-                                padding: const EdgeInsets.all(14.0),
+                                padding: const EdgeInsets.all(14),
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    SingleChildScrollView(
-                                      scrollDirection: Axis.horizontal,
-                                      child: Text(
-                                        nombre,
-                                        style: const TextStyle(
-                                          fontFamily: 'CenturyGothic',
-                                          fontWeight: FontWeight.bold,
-                                          fontSize: 18,
-                                          color: Colors.black,
+                                    Flexible(
+                                      flex: 0,
+                                      child: SingleChildScrollView(
+                                        scrollDirection: Axis.horizontal,
+                                        child: Text(
+                                          nombre,
+                                          style: const TextStyle(
+                                            fontFamily: 'CenturyGothic',
+                                            fontWeight: FontWeight.bold,
+                                            fontSize: 18,
+                                            color: Colors.black,
+                                          ),
+                                          maxLines: 1,
+                                          overflow: TextOverflow.visible,
                                         ),
-                                        maxLines: 1,
-                                        overflow: TextOverflow.visible,
                                       ),
                                     ),
                                     const SizedBox(height: 6),
                                     Flexible(
-                                      child: Text(
-                                        descripcionFinal,
-                                        style: const TextStyle(
-                                          fontFamily: 'CenturyGothic',
-                                          fontWeight: FontWeight.normal,
-                                          fontSize: 14,
-                                          color: Colors.grey,
-                                        ),
-                                        maxLines: 6,
-                                        overflow: TextOverflow.ellipsis,
+                                      flex: 2,
+                                      child: LayoutBuilder(
+                                        builder: (context, constraints) {
+                                          final descripcionParrafos =
+                                              descripcion.split('\n');
+                                          List<Widget> parrafos = [];
+                                          int mostrar =
+                                              descripcionParrafos.length > 3
+                                              ? 3
+                                              : descripcionParrafos.length;
+                                          for (int i = 0; i < mostrar; i++) {
+                                            parrafos.add(
+                                              Padding(
+                                                padding: const EdgeInsets.only(
+                                                  bottom: 2,
+                                                ),
+                                                child: Text(
+                                                  descripcionParrafos[i],
+                                                  style: const TextStyle(
+                                                    fontFamily: 'CenturyGothic',
+                                                    fontWeight: FontWeight.bold,
+                                                    fontSize: 13,
+                                                    color: Colors.grey,
+                                                  ),
+                                                  softWrap: true,
+                                                  maxLines: 3,
+                                                  overflow:
+                                                      TextOverflow.ellipsis,
+                                                ),
+                                              ),
+                                            );
+                                          }
+                                          return Column(
+                                            mainAxisSize: MainAxisSize.min,
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
+                                            children: parrafos,
+                                          );
+                                        },
                                       ),
                                     ),
                                     const Spacer(),
-                                    Container(
-                                      alignment: Alignment.center,
-                                      margin: const EdgeInsets.symmetric(
-                                        horizontal: 8,
-                                      ),
-                                      width: double.infinity,
-                                      child: Chip(
-                                        backgroundColor: const Color(
-                                          0xFFB3E5FC,
+                                    Flexible(
+                                      flex: 0,
+                                      child: Container(
+                                        alignment: Alignment.center,
+                                        margin: const EdgeInsets.symmetric(
+                                          horizontal: 8,
                                         ),
-                                        label: Text(
-                                          creador,
-                                          textAlign: TextAlign.center,
-                                          style: const TextStyle(
-                                            fontFamily: 'CenturyGothic',
-                                            fontWeight: FontWeight.bold,
-                                            fontSize: 15,
-                                            color: Colors.black,
+                                        width: double.infinity,
+                                        child: Chip(
+                                          backgroundColor: const Color(
+                                            0xFFB3E5FC,
                                           ),
-                                          maxLines: 1,
-                                          overflow: TextOverflow.ellipsis,
-                                        ),
-                                        shape: RoundedRectangleBorder(
-                                          borderRadius: BorderRadius.circular(
-                                            24,
+                                          label: Text(
+                                            creador,
+                                            textAlign: TextAlign.center,
+                                            style: const TextStyle(
+                                              fontFamily: 'CenturyGothic',
+                                              fontWeight: FontWeight.bold,
+                                              fontSize: 15,
+                                              color: Colors.black,
+                                            ),
+                                            maxLines: 1,
+                                            overflow: TextOverflow.ellipsis,
                                           ),
-                                        ),
-                                        padding: const EdgeInsets.symmetric(
-                                          horizontal: 16,
-                                          vertical: 6,
+                                          shape: RoundedRectangleBorder(
+                                            borderRadius: BorderRadius.circular(
+                                              24,
+                                            ),
+                                          ),
+                                          padding: const EdgeInsets.symmetric(
+                                            horizontal: 16,
+                                            vertical: 6,
+                                          ),
                                         ),
                                       ),
                                     ),

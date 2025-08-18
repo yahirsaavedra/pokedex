@@ -1,10 +1,20 @@
+/// Este archivo define el módulo de acceso a la base de datos local SQLite.
+/// Proporciona métodos para inicializar la base, realizar consultas, inserciones y actualizaciones.
+
 import 'package:pokedexapp/helpers/pokeapi.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
 
+/// Singleton (instancia única) para manejar la base de datos.
+///
+/// De esta manera, no es necesario inicializar la base de datos múltiples veces cada vez que se
+/// necesite realizar una consulta.
+///
+/// Propósito: Agilizar la consulta de equipos y Pokémones, evitando congestionar la PokéAPI
+/// sobresaturándola de múltiples solicitudes a la vez y en poco tiempo.
 class BaseDatos {
-  static const _dbName = 'pokedex.db';
-  static const _dbVersion = 1;
+  static const _dbName = 'pokedex.db'; // Nombre de la base de datos.
+  static const _dbVersion = 1; // Versión de la base de datos.
 
   BaseDatos._privateConstructor();
   static final BaseDatos instance = BaseDatos._privateConstructor();
@@ -12,14 +22,15 @@ class BaseDatos {
   static Database? _db;
   static bool _initialized = false;
 
+  /// Obtiene la instancia de la base de datos.
   Future<Database> get database async {
     if (_db != null && _initialized) return _db!;
-    _db = await _initDatabase();
+    _db = await _initDB();
     return _db!;
   }
 
-  // Inicializa la base de datos y las tablas
-  Future<Database> _initDatabase() async {
+  /// Inicializa la base de datos.
+  Future<Database> _initDB() async {
     final dbPath = await getDatabasesPath();
     final path = join(dbPath, _dbName);
 
@@ -27,17 +38,21 @@ class BaseDatos {
       path,
       version: _dbVersion,
       onCreate: (db, version) async {
-        await _createTables(db);
+        await _crearTablas(db);
       },
       onOpen: (db) async {
-        await _createTables(db);
+        await _crearTablas(db);
       },
     );
 
-    // Solo inserta datos si la tabla está vacía
     final count = Sqflite.firstIntValue(
       await db.rawQuery('SELECT COUNT(*) FROM pokemones'),
     );
+    /* Si la tabla de Pokémones está vacía, se obtienen los datos de la API.
+
+    Una vez insertados los Pokémones en la base de datos, no es necesario volverlos a
+    consultar a través de la PokéAPI.
+    */
     if (count == 0) {
       late final List lista;
       try {
@@ -45,15 +60,16 @@ class BaseDatos {
       } catch (e) {
         throw "Error al obtener la lista de Pokémones: $e";
       }
-      await _insertPokemones(db, lista);
+      await _insertarPokemones(db, lista);
     }
 
     _initialized = true;
     return db;
   }
 
-  // Crea las tablas si no existen
-  Future<void> _createTables(Database db) async {
+  /// Crea las tablas en la base de datos.
+  Future<void> _crearTablas(Database db) async {
+    // Crea la tabla de Pokémones.
     await db.execute('''
       CREATE TABLE IF NOT EXISTS pokemones (
         id INTEGER PRIMARY KEY,
@@ -69,6 +85,7 @@ class BaseDatos {
       );
     ''');
 
+    // Crea la tabla de equipos.
     await db.execute('''
       CREATE TABLE IF NOT EXISTS equipos (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -79,8 +96,10 @@ class BaseDatos {
     ''');
   }
 
-  // Inserta los pokemones en la tabla
-  Future<void> _insertPokemones(Database db, List lista) async {
+  /// Inserta los Pokémones en la tabla.
+  ///
+  /// [lista] es la lista de Pokémones a insertar obtenida de la PokéAPI.
+  Future<void> _insertarPokemones(Database db, List lista) async {
     for (var i = 0; i < lista.length; i++) {
       await db.execute('''
         INSERT OR IGNORE INTO pokemones VALUES (
@@ -98,29 +117,45 @@ class BaseDatos {
     }
   }
 
-  // Métodos genéricos CRUD
-  Future<int> insert(String table, Map<String, dynamic> values) async {
+  /// Inserta un nuevo registro en la tabla especificada.
+  ///
+  /// [tabla] es el nombre de la tabla donde se insertará el registro.
+  /// [valores] son los valores a insertar en forma de mapa.
+  Future<int> insertar(String tabla, Map<String, dynamic> valores) async {
     final db = await database;
-    return await db.insert(table, values);
+    return await db.insert(tabla, valores);
   }
 
-  Future<List<Map<String, dynamic>>> query(String table, int id) async {
+  /// Busca un registro en la tabla especificada.
+  ///
+  /// [tabla] es el nombre de la tabla donde se realizará la búsqueda.
+  /// [id] es el identificador del registro a buscar.
+  Future<List<Map<String, dynamic>>> buscar(String tabla, int id) async {
     final db = await database;
-    return await db.query(table, where: 'id = ?', whereArgs: [id]);
+    return await db.query(tabla, where: 'id = ?', whereArgs: [id]);
   }
 
-  Future<List<Map<String, dynamic>>> queryAll(String table) async {
+  /// Busca todos los registros en la tabla especificada.
+  ///
+  /// [tabla] es el nombre de la tabla donde se realizará la búsqueda.
+  Future<List<Map<String, dynamic>>> buscarTodo(String tabla) async {
     final db = await database;
-    return await db.query(table);
+    return await db.query(tabla);
   }
 
-  Future<int> update(
-    String table,
-    Map<String, dynamic> values,
+  /// Actualiza un registro en la tabla especificada.
+  ///
+  /// [tabla] es el nombre de la tabla donde se realizará la actualización.
+  /// [valores] son los nuevos valores a actualizar en forma de mapa.
+  /// [where] es la cláusula WHERE para identificar qué registros actualizar.
+  /// [whereArgs] son los argumentos para la cláusula WHERE.
+  Future<int> actualizar(
+    String tabla,
+    Map<String, dynamic> valores,
     String where,
     List<dynamic> whereArgs,
   ) async {
     final db = await database;
-    return await db.update(table, values, where: where, whereArgs: whereArgs);
+    return await db.update(tabla, valores, where: where, whereArgs: whereArgs);
   }
 }
